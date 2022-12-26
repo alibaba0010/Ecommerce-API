@@ -11,3 +11,5 @@ COPY ./ ./
 RUN npm install
 
 CMD [ "/bin/sh" ]
+
+EXPOSE 2000

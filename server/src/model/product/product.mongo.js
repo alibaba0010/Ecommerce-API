@@ -5,17 +5,14 @@ const ProductSchema = new Schema(
   {
     title: {
       type: String,
-      // required: true,
-      // unique: [true, "Product name already in use"],
+      required: true,
+      unique: [true, "Product name already in use"],
     },
     desc: {
       type: String,
-      // required: [true, "Please provide description"],
+      required: [true, "Please provide description"],
     },
-    images: {
-      type: String,
-      // required: [true, "Please provide image"],
-    },
+
     categories: {
       // More than one categroies
       type: Array,
@@ -25,11 +22,11 @@ const ProductSchema = new Schema(
     },
     size: {
       type: String,
-      // required: [true, "Please provide size"],
+      required: [true, "Please provide size"],
     },
     price: {
       type: Number,
-      // required: [true, "Please provide price"],
+      required: [true, "Please provide price"],
     },
   },
   { timestamps: true }

@@ -18,7 +18,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// app.silent = true;
 app
   .use(json())
   // .use("/uploads", express.static(path.join(__dirname, ".", "uploads")))

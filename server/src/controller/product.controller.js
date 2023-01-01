@@ -2,48 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
 import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
-import multer from "multer";
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cd(null, "/uploads/");
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, new Date().toISOString() + file.originalname);
-//   },
-// });
-// const upload = multer({ dest: "/uploads/" });
-
-// const fileFilter = (req, file, cb) => {
-//   // reject a file type
-//   if (file.mimetype === image / png || file.mimetype === image / jpg) {
-//     cb("Success", true);
-//   } else {
-//     cb(new Error("Add a jpg or png image"), false);
-//   }
-// };
-
-// const upload = multer({
-//   storage,
-//   limits: {
-//     fileSize: 1024 * 1024 * 10,
-//   },
-// fileFilter
-// });
-
-export const uploadImage = (req, res, next) => {
-  upload.single("images");
-  console.log("Body: ", req.body);
-  console.log("Files: ", req.files);
-  next();
-};
 
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
-  console.log("Req: ", req.body);
 
   const addProduct = req.body;
-  // addProduct.images = req.file.path;
   const product = await Product.create(addProduct);
   res.status(StatusCodes.CREATED).json(product);
 }

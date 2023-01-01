@@ -4,7 +4,6 @@ import {
   httpUpdateProduct,
   httpDeleteProduct,
   httpGetProduct,
-  uploadImage,
   httpGetAllProducts,
 } from "../controller/product.controller.js";
 
@@ -14,7 +13,7 @@ const productRouter = Router();
 
 productRouter
   .route("/")
-  .post(authenticateUser, verifyAdminWithId, uploadImage, httpAddNewProduct)
+  .post(authenticateUser, verifyAdminWithId, httpAddNewProduct)
   .get(httpGetAllProducts);
 productRouter
   .route("/:id")

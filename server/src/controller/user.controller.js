@@ -5,11 +5,12 @@ import BadRequestError from "../errors/badRequest.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
 import { getPagination } from "../services/query.js";
+import redis from "redis";
 
 // ADD NEW USER
 export async function httpAddNewUser(req, res) {
-  const userBody = req.body;
-  const user = await User.create({ ...userBody });
+  const { username, email, password } = req.body;
+  const user = await User.create({ username, email, password });
   res
     .status(StatusCodes.CREATED)
     .json({ username: user.username, email: user.email, id: user._id });
@@ -17,9 +18,11 @@ export async function httpAddNewUser(req, res) {
 
 // FOR ADMIN
 export async function httpAddNewAdmin(req, res) {
-  const admin = req.body;
-  admin.isAdmin = true;
-  const user = await User.create({ ...admin });
+  const { username, email, password } = req.body;
+
+  req.body.isAdmin = true;
+  const user = await User.create({ username, email, password });
+
   res
     .status(StatusCodes.CREATED)
     .json({ username: user.username, email: user.email, id: user._id });
@@ -40,7 +43,7 @@ export async function httpLogin(req, res) {
   if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
 
   const token = await checkUsers.createJWT();
-
+  const redisToken = await redisClient.create(token, id);
   res.status(StatusCodes.OK).json({ username: checkUsers.username, token });
 }
 

@@ -43,6 +43,7 @@ const UserSchema = new Schema(
 
 // To hash password
 UserSchema.pre("save", async function () {
+  if (!this.isModified("password")) next(); //{}
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -56,7 +57,7 @@ UserSchema.methods.createJWT = async function () {
     }
   );
   // const redisStorage = await redisClient.set(signInToken, id);
-
+  // console.log("redisStorage:", redisStorage);
   return signInToken;
   // return { signInToken, redisStorage };
 };

@@ -10,7 +10,7 @@ import { errorHandler } from "./errors/error.js";
 import { routeError } from "./errors/route.error.js";
 import redis from "redis";
 dotenv.config();
-console.log(process.env.REDIS_URI)
+// console.log(process.env.REDIS_URI)
 const redisClient = redis.createClient(process.env.REDIS_URI);
 
 import path from "path";

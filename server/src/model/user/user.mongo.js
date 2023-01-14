@@ -1,14 +1,15 @@
 import pkg from "mongoose";
 const { Schema, model } = pkg;
-
-// import redis from "redis";
+import dotenv from "dotenv"
+dotenv.config()
+import redis from "redis";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-// const redisClient = redis.createClient({
-//   host: "localhost",
-//   port: "127.0.0.1",
-// });
+const redisClient = redis.createClient({
+  host: "localhost",
+  port: "127.0.0.1",
+});
 
 const UserSchema = new Schema(
   {
@@ -56,8 +57,8 @@ UserSchema.methods.createJWT = async function () {
       expiresIn: process.env.JWT_LIFETIME,
     }
   );
-  // const redisStorage = await redisClient.set(signInToken, id);
-  // console.log("redisStorage:", redisStorage);
+  const redisStorage = await redisClient.create(signInToken, this._id);
+  console.log("redisStorage:", redisStorage);
   return signInToken;
   // return { signInToken, redisStorage };
 };

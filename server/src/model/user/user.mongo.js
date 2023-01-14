@@ -1,15 +1,14 @@
 import pkg from "mongoose";
 const { Schema, model } = pkg;
-import dotenv from "dotenv"
-dotenv.config()
-import redis from "redis";
+import dotenv from "dotenv";
+dotenv.config();
+import { createClient } from "redis";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-const redisClient = redis.createClient({
-  host: "localhost",
-  port: "127.0.0.1",
-});
+
+const redisClient = createClient({ url: process.env.REDIS_URI });
+
 
 const UserSchema = new Schema(
   {
@@ -57,10 +56,14 @@ UserSchema.methods.createJWT = async function () {
       expiresIn: process.env.JWT_LIFETIME,
     }
   );
-  const redisStorage = await redisClient.create(signInToken, this._id);
-  console.log("redisStorage:", redisStorage);
-  return signInToken;
-  // return { signInToken, redisStorage };
+  await redisClient.connect();
+  const stringifyId = JSON.stringify(this._id);
+  console.log("Id: ", stringifyId);
+  const redisStorage = await redisClient.set(signInToken, stringifyId);
+  console.log("redisStorage: ", redisStorage);
+  await redisClient.disconnect();
+
+  return { signInToken, redisStorage }; 
 };
 
 // compare password when login in

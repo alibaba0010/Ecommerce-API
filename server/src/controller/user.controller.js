@@ -5,11 +5,11 @@ import BadRequestError from "../errors/badRequest.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
 import { getPagination } from "../services/query.js";
-import redis from "redis";
 import dotenv from "dotenv";
 dotenv.config();
+import { createClient } from "redis";
+const redisClient = createClient({ url: process.env.REDIS_URI });
 
-const redisClient = redis.createClient();
 const exp = process.env.JWT_LIFETIME;
 
 // ADD NEW USER
@@ -48,11 +48,11 @@ export async function httpLogin(req, res) {
   if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
 
   const token = await checkUsers.createJWT();
-  // const redisStorage = redisClient.setEx("token", exp, token);
-  // console.log("redisStorage Controller: ", redisStorage);
-  // const redisToken = await redisClient.create(token, _id);
-  // console.log("redisToken: ", redisToken);
-  res.status(StatusCodes.OK).json({ username: checkUsers.username, token });
+  
+
+  res
+    .status(StatusCodes.OK)
+    .json({ username: checkUsers.username, token, id: checkUsers.id });
 }
 
 // UPDATE USER
@@ -110,7 +110,7 @@ const updateUserPassword = async (req, res) => {
   if (!oldPassword || !newPassword) {
     throw new BadRequestError("Please provide both values");
   }
-  const user = await User.findOne({ _id: req.user.userId }); 
+  const user = await User.findOne({ _id: req.user.userId });
 
   const isPasswordCorrect = await user.comparePassword(oldPassword);
   if (!isPasswordCorrect) {

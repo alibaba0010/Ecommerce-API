@@ -19,5 +19,5 @@ services:
   # Redis
   redis:
     image: redis
-    port:
+    ports:
       - "6379:6379"

@@ -10,7 +10,6 @@ dotenv.config();
 import { createClient } from "redis";
 const redisClient = createClient({ url: process.env.REDIS_URI });
 
-const exp = process.env.JWT_LIFETIME;
 
 // ADD NEW USER
 export async function httpAddNewUser(req, res) {

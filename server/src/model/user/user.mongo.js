@@ -7,8 +7,9 @@ import { createClient } from "redis";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const redisClient = createClient({ url: process.env.REDIS_URI });
+const exp = process.env.JWT_LIFETIME;
 
+const redisClient = createClient({ url: process.env.REDIS_URI });
 
 const UserSchema = new Schema(
   {
@@ -53,17 +54,17 @@ UserSchema.methods.createJWT = async function () {
     { userId: this._id, isAdmin: this.isAdmin },
     process.env.JWT_SEC,
     {
-      expiresIn: process.env.JWT_LIFETIME,
+      expiresIn: exp,
     }
   );
   await redisClient.connect();
   const stringifyId = JSON.stringify(this._id);
   console.log("Id: ", stringifyId);
   const redisStorage = await redisClient.set(signInToken, stringifyId);
-  console.log("redisStorage: ", redisStorage);
+  await redisClient.expire(signInToken, exp);
   await redisClient.disconnect();
 
-  return { signInToken, redisStorage }; 
+  return { signInToken, redisStorage };
 };
 
 // compare password when login in

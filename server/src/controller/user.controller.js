@@ -10,7 +10,6 @@ dotenv.config();
 import { createClient } from "redis";
 const redisClient = createClient({ url: process.env.REDIS_URI });
 
-
 // ADD NEW USER
 export async function httpAddNewUser(req, res) {
   const { username, email, password } = req.body;
@@ -47,11 +46,10 @@ export async function httpLogin(req, res) {
   if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
 
   const token = await checkUsers.createJWT();
-  
 
   res
     .status(StatusCodes.OK)
-    .json({ username: checkUsers.username, token, id: checkUsers.id });
+    .json({ id: checkUsers.id, username: checkUsers.username, token });
 }
 
 // UPDATE USER

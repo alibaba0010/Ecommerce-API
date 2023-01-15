@@ -43,7 +43,7 @@ const UserSchema = new Schema(
 );
 
 // To hash password
-UserSchema.pre("save", async function () {
+UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) next(); //{}
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -59,12 +59,11 @@ UserSchema.methods.createJWT = async function () {
   );
   await redisClient.connect();
   const stringifyId = JSON.stringify(this._id);
-  console.log("Id: ", stringifyId);
-  const redisStorage = await redisClient.set(signInToken, stringifyId);
+  await redisClient.set(signInToken, stringifyId);
   await redisClient.expire(signInToken, exp);
+  const redisToken = await redisClient.get(signInToken);
   await redisClient.disconnect();
-
-  return { signInToken, redisStorage };
+  return signInToken;
 };
 
 // compare password when login in

@@ -39,7 +39,7 @@ export function verifyUser(req, res, next) {
 }
 // VERIFY USERS WITHOUT PARAMS
 export async function verifyUserWithId(req, res, next) {
-  const user = await User.findById(req.user.userId);
+  const user = await User.findById(req.user.userId).select("-password");
   if (user) {
     next();
   } else {
@@ -49,7 +49,7 @@ export async function verifyUserWithId(req, res, next) {
 
 // VERIFY ADMIN WITHOUT PARAMS
 export async function verifyAdminWithId(req, res, next) {
-  const user = await User.findById(req.user.userId);
+  const user = await User.findById(req.user.userId).select("-password");
   if (user || user.isAdmin === true) {
     next();
   } else {

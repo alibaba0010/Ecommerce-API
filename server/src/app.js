@@ -28,3 +28,10 @@ app
   .use(errorHandler);
 
 export default app;
+
+// app.use(
+//   cors({
+//     origin: ["http://localhost:3000", "https://pinvent-app.vercel.app"],
+//     credentials: true,
+//   })
+// );

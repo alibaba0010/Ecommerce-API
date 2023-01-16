@@ -59,9 +59,10 @@ UserSchema.methods.createJWT = async function () {
   );
   await redisClient.connect();
   const stringifyId = JSON.stringify(this._id);
-  await redisClient.set(signInToken, stringifyId);
-  await redisClient.expire(signInToken, exp);
-  const redisToken = await redisClient.get(signInToken);
+  await redisClient.setex(stringifyId,exp, signInToken);
+  // await redisClient.expire(signInToken, exp);
+  const redisToken = await redisClient.get(stringifyId);
+console.log("redis Token: ", redisToken);
   await redisClient.disconnect();
   return signInToken;
 };

@@ -11,7 +11,7 @@ export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new UnauthenticatedError("Provide an authentic token");
+    throw new UnauthenticatedError("Please login in to create a token");
   }
   const token = authHeader.split(" ")[1];
   await redisClient.connect();

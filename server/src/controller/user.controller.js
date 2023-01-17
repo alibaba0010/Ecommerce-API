@@ -98,8 +98,14 @@ export async function getUserByAdmin(req, res) {
   res.status(StatusCodes.OK).json(others);
 }
 // Hasn't been used
-const showCurrentUser = async (req, res) => {
-  res.status(StatusCodes.OK).json({ user: req.user });
+export const showCurrentUser = async (req, res) => {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Unable to get User");
+
+  const { username, id, email, isAdmin } = user;
+
+  return res.status(StatusCodes.OK).json({ username, id, email, isAdmin });
 };
 
 const updateUserPassword = async (req, res) => {

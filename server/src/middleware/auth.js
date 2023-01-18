@@ -17,7 +17,7 @@ export const authenticateUser = async (req, res, next) => {
   await redisClient.connect();
   const userRedis = await redisClient.get(token);
   await redisClient.disconnect();
-  
+  // redisclient value would be id 
   try {
     const decode = jwt.verify(token, process.env.JWT_SEC);
 

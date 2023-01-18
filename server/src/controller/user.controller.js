@@ -24,12 +24,11 @@ export async function httpAddNewAdmin(req, res) {
   const admin = req.body;
 
   admin.isAdmin = true;
-  const { username, email, password } = admin;
-  const user = await User.create({ username, email, password });
-
+  const { username, email, password, isAdmin } = admin;
+  const user = await User.create({ username, email, password, isAdmin });
   res
     .status(StatusCodes.CREATED)
-    .json({ username: user.username, email: user.email, id: user._id });
+    .json({ username: user.username, email: user.email, id: user._id, });
 }
 
 // LOGIN

@@ -23,7 +23,6 @@ image: redis:6.2.5-alpine
 volumes:
 mongo-data:
 
-console.log(typeof this.\_id);
 
 
 const { response } = require('express');

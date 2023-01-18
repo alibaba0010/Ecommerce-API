@@ -21,9 +21,10 @@ export async function httpAddNewUser(req, res) {
 
 // FOR ADMIN
 export async function httpAddNewAdmin(req, res) {
-  const { username, email, password } = req.body;
+  const admin = req.body;
 
-  req.body.isAdmin = true;
+  admin.isAdmin = true;
+  const { username, email, password } = admin;
   const user = await User.create({ username, email, password });
 
   res

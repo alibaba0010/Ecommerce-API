@@ -5,6 +5,8 @@ import BadRequestError from "../errors/badRequest.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
 import { getPagination } from "../services/query.js";
+import { sendEmail } from "../services/Email.js";
+
 import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "redis";
@@ -144,6 +146,35 @@ export async function forgotPassword(req, res) {
 
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
+
+
+  const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
+
+  // Reset Email
+  const message = `
+ <h2>Hello ${user.name}</h2>
+ <p>Please use the url below to reset your password</p>  
+ <p>This reset link is valid for only 20minutes.</p>
+
+ <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+
+ <p>Regards...</p>
+ <p>AliBaba Team</p>
+`;
+
+  const subject = "Password Reset Request";
+  const sendTo = user.email;
+  const sentFrom = process.env.EMAIL_USER;
+  const replyTo = process.env.EMAIL_USER;
+  try {
+    const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
+    return res
+      .status(StatusCodes.OK)
+      .json({ msg: "Resent sent", success: true });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error("Email not sent, please try again");
+  }
 }
 
 export const logOutUser = async (req, res) => {

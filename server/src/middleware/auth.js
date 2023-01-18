@@ -7,7 +7,6 @@ const redisClient = createClient({ url: process.env.REDIS_URI });
 import User from "../model/user/user.mongo.js";
 
 export const authenticateUser = async (req, res, next) => {
-  
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -17,7 +16,7 @@ export const authenticateUser = async (req, res, next) => {
   await redisClient.connect();
   const userRedis = await redisClient.get(token);
   await redisClient.disconnect();
-  // redisclient value would be id 
+  // redisclient value would be id
   try {
     const decode = jwt.verify(token, process.env.JWT_SEC);
 
@@ -30,7 +29,7 @@ export const authenticateUser = async (req, res, next) => {
 };
 
 // VERIFY USER
-export function verifyUser(req, res, next) {
+export function verifyUserWithId(req, res, next) {
   if (req.params.id === req.user.userId) {
     next();
   } else {
@@ -38,7 +37,7 @@ export function verifyUser(req, res, next) {
   }
 }
 // VERIFY USERS WITHOUT PARAMS
-export async function verifyUserWithId(req, res, next) {
+export async function verifyUser(req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user) {
     next();
@@ -47,8 +46,17 @@ export async function verifyUserWithId(req, res, next) {
   }
 }
 
+// VERIFY ADMIN WITH ID
+export function  verifyAdminWithId(req, res, next) {
+  if (req.user.isAdmin === true || req.params.id === req.user.userId) {
+    next();
+  } else {
+    throw new UnAuthorizedError("Access Denied!!");
+  }
+}
+
 // VERIFY ADMIN WITHOUT PARAMS
-export async function verifyAdminWithId(req, res, next) {
+export async function verifyAdmin (req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user || user.isAdmin === true) {
     next();
@@ -57,11 +65,4 @@ export async function verifyAdminWithId(req, res, next) {
   }
 }
 
-// VERIFY ADMIN
-export function verifyAdmin(req, res, next) {
-  if (req.user.isAdmin === true || req.params.id === req.user.userId) {
-    next();
-  } else {
-    throw new UnAuthorizedError("Access Denied!!");
-  }
-}
+

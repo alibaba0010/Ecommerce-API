@@ -9,6 +9,8 @@ import {
   showCurrentUser,
   updateUserPassword,
   logOutUser,
+  forgotPassword,
+  resetPassword,
 } from "../controller/user.controller.js";
 
 import {
@@ -25,11 +27,13 @@ userRouter
   .post("/users/login", httpLogin)
   //update user already  logged in with his token verification
   .patch("/users/user", authenticateUser, verifyUser, updateUser)
-  .patch("/password",authenticateUser, verifyUser, updateUserPassword)
+  .patch("/user/password", authenticateUser, verifyUser, updateUserPassword)
   .get("/users", authenticateUser, verifyAdmin, getAllUserByAdmin)
   //verify if user is admin before getting the user by the id params
   .get("/user/:id", authenticateUser, verifyAdmin, getUserByAdmin)
   .get("/user", authenticateUser, verifyUser, showCurrentUser)
-  .get("/users/logout", authenticateUser, verifyUser, logOutUser);
+  .get("/users/logout", authenticateUser, verifyUser, logOutUser)
+  .patch("/forgotpassword", forgotPassword)
+  .patch("/resetpassword/:restToken", resetPassword);
 
 export default userRouter;

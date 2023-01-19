@@ -3,13 +3,14 @@ const { Schema, model } = pkg;
 import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "redis";
+import { randomBytes, createHash } from "crypto";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const exp = process.env.JWT_LIFETIME;
 
-const redisClient = createClient({ url: process.env.REDIS_URI });
+const redisClient = createClient();
 
 const UserSchema = new Schema(
   {
@@ -62,6 +63,17 @@ UserSchema.methods.createJWT = async function () {
   // const redisToken = await redisClient.get(stringifyId);
   await redisClient.disconnect();
   return signInToken;
+};
+
+// Create forgot password token
+UserSchema.methods.createPasswordToken = async function () {
+  await redisClient.connect();
+  let resetToken = randomBytes(32).toString("hex") + this._id;
+  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+
+  await redisClient.setEx(this.id, exp, hashedToken);
+  await redisClient.disconnect();
+  return hashedToken;
 };
 
 // compare password when login in

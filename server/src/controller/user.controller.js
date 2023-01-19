@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
 import User from "../model/user/user.mongo.js";
 import BadRequestError from "../errors/badRequest.js";
@@ -9,7 +9,6 @@ import { sendEmail } from "../services/Email.js";
 
 import dotenv from "dotenv";
 dotenv.config();
-import { createClient } from "redis";
 const redisClient = createClient({ url: process.env.REDIS_URI });
 
 // ADD NEW USER
@@ -21,6 +20,9 @@ export async function httpAddNewUser(req, res) {
 
   if (!username || !email || !password || !confirmPassword)
     throw new BadRequestError("Please fill all required field");
+
+  const checkEmailExist = await User.findOne({ email });
+  if (checkEmailExist) throw new BadRequestError("Email already exists");
 
   const user = await User.create({ username, email, password });
   res
@@ -38,7 +40,8 @@ export async function httpAddNewAdmin(req, res) {
   if (password !== confirmPassword)
     throw new BadRequestError("Password doesn't match");
 
-  if (!username || !email || !password || !confirmPassword)
+  // if (!username || !email || !password || !confirmPassword)
+  if ((!username, !email, !password, !confirmPassword))
     throw new BadRequestError("Please fill all required field");
 
   const user = await User.create({ username, email, password, isAdmin });
@@ -75,11 +78,15 @@ export async function updateUser(req, res) {
 
   if (!username) throw new BadRequestError("Username field cannot be empty");
 
-  const updatedUser = await User.findOneAndUpdate(
-    { _id: userId },
-    { $set: username },
-    { new: true }
-  );
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("User not Found");
+
+  user.username = username;
+
+  const updatedUser = await user.save();
+  console.log(updateUser);
+
+  console.log(updateUser);
   if (!updatedUser) throw new notFoundError(`No user with id ${userId}`);
   const { email, id } = updatedUser;
 
@@ -107,8 +114,14 @@ export async function getUserByAdmin(req, res) {
   const { id } = req.params;
   const user = await User.findById(id);
   if (!user) throw new notFoundError(`Unable to get User ${id}`);
-  const { password, _id, __v, ...others } = user._doc;
-  res.status(StatusCodes.OK).json(others);
+  const { password, __v, ...others } = user._doc;
+  res.status(StatusCodes.OK).json({
+    others,
+    request: {
+      type: "GET",
+      url: `http://localhost:2000/v1/user/${id}`,
+    },
+  });
 }
 // Hasn't been used
 export const showCurrentUser = async (req, res) => {
@@ -121,17 +134,18 @@ export const showCurrentUser = async (req, res) => {
   return res.status(StatusCodes.OK).json({ username, id, email, isAdmin });
 };
 
+// Edit Password
 export const updateUserPassword = async (req, res) => {
   const { userId } = req.user;
 
-  const { oldPassword, newPassword } = req.body;
-  if (!oldPassword || !newPassword) {
+  const { password, newPassword } = req.body;
+  if (!password || !newPassword) {
     throw new BadRequestError("Please provide required fields");
   }
 
   const user = await User.findById(userId);
 
-  const isPasswordCorrect = await user.comparePassword(oldPassword);
+  const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) throw new UnAuthenticatedError("Invalid Credentials");
 
   user.password = newPassword;
@@ -147,6 +161,12 @@ export async function forgotPassword(req, res) {
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
 
+  await redisClient.connect();
+
+  let resetToken = await user.createPasswordToken();
+  const getToken = await redisClient.get(user.id);
+  if (getToken) await redisClient.del(getToken);
+  await redisClient.disconnect();
 
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
 
@@ -167,7 +187,7 @@ export async function forgotPassword(req, res) {
   const sentFrom = process.env.EMAIL_USER;
   const replyTo = process.env.EMAIL_USER;
   try {
-    const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
+    await sendEmail(message, subject, sentFrom, sendTo, replyTo);
     return res
       .status(StatusCodes.OK)
       .json({ msg: "Resent sent", success: true });
@@ -180,4 +200,25 @@ export async function forgotPassword(req, res) {
 export const logOutUser = async (req, res) => {
   console.log("Token: ", token);
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
-}
+};
+
+export const resetPassword = async (req, res) => {
+  const { resetToken } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword)
+    throw new BadRequestError("Password doesn't match");
+  // Hash token, then compare to Token in redis DB
+  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+
+  const userToken = await redisClient.get(hashedToken);
+  if (!userToken) throw new notFoundError("Invalid or Expired Token");
+
+  // Find user
+  const user = await Token.findOne({ _id: userToken.userId });
+  user.password = password;
+  await user.save();
+  res.status(StatusCodes.OK).json({
+    msg: "Password Reset Successful, Please Login",
+  });
+};

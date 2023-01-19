@@ -2,19 +2,35 @@ import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
 import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
-
+import User from "../model/user/user.mongo.js";
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
+  const { userId } = req.user;
+  const { title, desc, categories, color, size, price } = req.body; // add image
 
-  const addProduct = req.body;
-  const product = await Product.create(addProduct);
+  if (!title || !desc || !size || !price)
+    throw new BadRequestError("Please fill all required field");
+  const product = await Product.create({
+    user: userId,
+    title,
+    desc,
+    categories,
+    color,
+    size,
+    price,
+  });
   res.status(StatusCodes.CREATED).json(product);
 }
 
 // UPDATE PRODUCT
 export async function httpUpdateProduct(req, res) {
+  const { userId } = req.user;
   const productId = req.params.id;
-  const product = req.body;
+  const { title, desc, categories, color, size, price } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("User not Found");
+
   const updateProduct = await Product.findByIdAndUpdate(
     { _id: productId },
     { $set: product },

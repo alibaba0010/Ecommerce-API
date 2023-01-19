@@ -1,8 +1,13 @@
 import pkg from "mongoose";
-const { Schema, model } = pkg;
+const { Schema, model, Types } = pkg;
 
 const ProductSchema = new Schema(
   {
+    user: {
+      type: Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
     title: {
       type: String,
       required: true,
@@ -28,6 +33,9 @@ const ProductSchema = new Schema(
       type: Number,
       required: [true, "Please provide price"],
     },
+    // image: {
+    //   type: Object,
+    // },
   },
   { timestamps: true }
 );

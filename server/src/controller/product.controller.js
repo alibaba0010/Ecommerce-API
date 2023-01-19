@@ -19,7 +19,9 @@ export async function httpAddNewProduct(req, res) {
     size,
     price,
   });
-  res.status(StatusCodes.CREATED).json(product);
+  const { __v, ...others } = user._doc;
+
+  res.status(StatusCodes.CREATED).json(others);
 }
 
 // UPDATE PRODUCT

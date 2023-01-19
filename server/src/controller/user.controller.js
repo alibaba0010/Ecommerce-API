@@ -154,6 +154,17 @@ export const updateUserPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Success! Password Updated." });
 };
 
+// LOGOUT USER
+export const logOutUser = async (req, res) => {
+  const { userId } = req.user;
+  await redisClient.connect();
+  const token = await redisClient.get(userId);
+  const check = await redisClient.del(token);
+  await redisClient.disconnect();
+
+  return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
+};
+
 // FORGOT PASSWORD
 export async function forgotPassword(req, res) {
   const { email } = req.body;
@@ -196,11 +207,6 @@ export async function forgotPassword(req, res) {
     throw new Error("Email not sent, please try again");
   }
 }
-
-export const logOutUser = async (req, res) => {
-  console.log("Token: ", token);
-  return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
-};
 
 export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;

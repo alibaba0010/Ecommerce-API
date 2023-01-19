@@ -7,13 +7,17 @@ import {
   httpGetAllProducts,
 } from "../controller/product.controller.js";
 
-import { authenticateUser, verifyAdminWithId } from "../middleware/auth.js";
+import {
+  authenticateUser,
+  verifyAdmin,
+  verifyAdminWithId,
+} from "../middleware/auth.js";
 
 const productRouter = Router();
 
 productRouter
   .route("/")
-  .post(authenticateUser, verifyAdminWithId, httpAddNewProduct)
+  .post(authenticateUser, verifyAdmin, httpAddNewProduct)
   .get(httpGetAllProducts);
 productRouter
   .route("/:id")

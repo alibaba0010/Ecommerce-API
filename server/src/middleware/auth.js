@@ -36,7 +36,7 @@ export function verifyUserWithId(req, res, next) {
     throw new UnAuthorizedError("Access Denied!!!");
   }
 }
-// VERIFY USERS WITHOUT PARAMS
+// VERIFY USERS WITHOUT ID
 export async function verifyUser(req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user) {
@@ -55,7 +55,7 @@ export function  verifyAdminWithId(req, res, next) {
   }
 }
 
-// VERIFY ADMIN WITHOUT PARAMS
+// VERIFY ADMIN WITHOUT ID
 export async function verifyAdmin (req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user || user.isAdmin === true) {

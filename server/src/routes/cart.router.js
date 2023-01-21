@@ -2,8 +2,10 @@ import { Router } from "express";
 
 import {
   authenticateUser,
- verifyAdminWithId,
+  verifyAdminWithId,
   verifyUserWithId,
+  verifyUser,
+  verifyAdmin,
 } from "../middleware/auth.js";
 
 const cartRouter = Router();
@@ -18,12 +20,12 @@ import {
 
 cartRouter
   .route("/cart")
-  .post(authenticateUser, verifyUserWithId, httpCreateCart)
-  .patch(authenticateUser, verifyUserWithId, httpUpdateCart)
-  .get(authenticateUser, verifyUserWithId, httpGetAllCarts);
+  .post(authenticateUser, verifyUser, httpCreateCart)
+  .patch(authenticateUser, verifyUser, httpUpdateCart)
+  .get(authenticateUser, verifyUser, httpGetAllCarts);
 cartRouter
   .route("/cart/:id")
-  .delete(authenticateUser, verifyAdminWithId, httpDeleteCart)
-  .get(authenticateUser, verifyUserWithId, httpGetCart);
+  .delete(authenticateUser, verifyAdmin, httpDeleteCart)
+  .get(authenticateUser, verifyUser, httpGetCart);
 
 export default cartRouter;

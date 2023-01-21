@@ -19,7 +19,7 @@ export async function httpAddNewProduct(req, res) {
     size,
     price,
   });
-  const { __v, ...others } = user._doc;
+  const { __v, ...others } = product._doc;
 
   res.status(StatusCodes.CREATED).json(others);
 }
@@ -84,58 +84,41 @@ export async function httpGetAllProducts(req, res) {
     request: { type: "POST", url: "http://localhost:2000/v1/products" },
   });
 }
+async function getProducts(req, res) {
+  const { title, color, categories, size, nFilters } = req.query; // price check in postman
+  const queryObject = {};
 
-// const { categories, size, price, fields, nFilters } = req.query;
-// // const { featured, company, name, sort, fields, nFilters } = req.query;
-// const queryObject = {};
+  if (color) queryObject.color = color;
 
-// if (featured) {
-//   queryObject.featured = featured === "true" ? true : false;
-// }
+  if (title) queryObject.title = { $regex: title, $options: "i" };
+  if (nFilters) {
+    const operatorMap = {
+      ">": "$gt",
+      ">=": "$gte",
+      "=": "$eq",
+      "<": "$lt",
+      "<=": "$lte",
+    };
+    const regEx = /\b(<|>|>=|=|<|<=)\b/g;
+    let filters = nFilters.replace(regEx, (match) => `-${operatorMap[match]}-`);
 
-// if (company) {
-//   queryObject.company = company;
-// }
-// if (name) {
-//   queryObject.name = { $regex: name, $options: "i" };
-// }
-// if (nFilters) {
-//   const operatorMap = {
-//     ">": "$gt",
-//     ">=": "$gte",
-//     "=": "$eq",
-//     "<": "$lt",
-//     "<=": "$lte",
-//   };
-//   const regEx = /\b(<|>|>=|=|<|<=)\b/g;
-//   let filters = nFilters.replace(regEx, (match) => `-${operatorMap[match]}-`);
+    const options = ["price", "rating"];
+    console.log("options: ", options);
+    filters = filters.split(",").forEach((item) => {
+      const [field, operator, value] = item.split("-");
+      if (options.includes(field)) {
+        queryObject[field] = { [operator]: Number(value) };
+      }
+    });
+  }
+  console.log(queryObject);
+  let result = Product.find(queryObject);
+  console.log("results: ", result);
 
-//   const options = ["price", "rating"];
+  const { skip, limit } = getPagination(req.query);
+  result = result.skip(skip).limit(limit);
 
-//   filters = filters.split(",").forEach((item) => {
-//     const [field, operator, value] = item.split("-");
-//     if (options.includes(field)) {
-//       queryObject[field] = { [operator]: Number(value) };
-//     }
-//   });
-// }
-// console.log(queryObject);
-// let result = Product.find(queryObject);
-
-// // sort
-// if (sort) {
-//   const sortList = sort.split(",").join(" ");
-//   result = result.sort(sortList);
-// } else {
-//   result = result.sort("createdAt");
-// }
-// if (fields) {
-//   const fieldsList = fields.split(",").join(" ");
-//   result = result.select(fieldsList);
-// }
-
-// const { skip, limit } = getPagination(req.query);
-// result = result.skip(skip).limit(limit);
-
-// const productQuery = await result;
-// return res.status(200).json({ productQuery, bits: productQuery.length });
+  const productQuery = await result;
+  console.log("ProductQuery: ", productQuery);
+  return res.status(200).json({ productQuery, bits: productQuery.length });
+}

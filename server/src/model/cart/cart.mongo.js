@@ -5,7 +5,7 @@ const CartSchema = new Schema({
   userId: {
     type: Types.ObjectId,
     ref: "User",
-    // required: [true, "Please provide username"],
+    required: [true, "Please provide username"],
   },
   products: [
     {

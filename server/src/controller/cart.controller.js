@@ -1,4 +1,5 @@
 import Cart from "../model/cart/cart.mongo.js";
+import notFoundError from "../errors/notFound.js";
 
 import { StatusCodes } from "http-status-codes";
 
@@ -6,16 +7,21 @@ import { getPagination } from "../services/query.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {
-  req.body.userId = req.user.userId;
-  const carts = await Cart.create(req.body);
+  const { userId } = req.user.userId;
+  if (!userId) throw new notFoundError("Login to add Product to cart");
 
-  return res.status(StatusCodes.CREATED).json({ carts });
+  const { products } = req.body;
+  const carts = await Cart.create({ user: userId, products });
+
+  const { __v, ...others } = carts._doc;
+
+  return res.status(StatusCodes.CREATED).json({ others });
 }
 
 // UPDATE CART
 export async function httpUpdateCart(req, res) {
-  const cartId = req.params.id;
-  const cart = req.body;
+  const { id: cartId } = req.params;
+  const {products} = req.body;
   const updateCart = await Cart.findByIdAndUpdate(
     cartId,
     { $set: cart },

@@ -7,11 +7,7 @@ import {
   httpGetAllProducts,
 } from "../controller/product.controller.js";
 
-import {
-  authenticateUser,
-  verifyAdmin,
-  verifyAdminWithId,
-} from "../middleware/auth.js";
+import { authenticateUser, verifyAdmin } from "../middleware/auth.js";
 
 const productRouter = Router();
 
@@ -21,8 +17,8 @@ productRouter
   .get(httpGetAllProducts);
 productRouter
   .route("/:id")
-  .patch(authenticateUser, verifyAdminWithId, httpUpdateProduct)
-  .delete(authenticateUser, verifyAdminWithId, httpDeleteProduct)
+  .patch(authenticateUser, verifyAdmin, httpUpdateProduct)
+  .delete(authenticateUser, verifyAdmin, httpDeleteProduct)
   .get(httpGetProduct);
 
 export default productRouter;

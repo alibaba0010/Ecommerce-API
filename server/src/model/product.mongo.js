@@ -33,9 +33,13 @@ const ProductSchema = new Schema(
       type: Number,
       required: [true, "Please provide price"],
     },
-    // image: {
-    //   type: Object,
-    // },
+    image: {
+      type: Object,
+    },
+    quantity: {
+      type: Number,
+      required: [true, "Please provide quantity"],
+    },
   },
   { timestamps: true }
 );

@@ -3,13 +3,37 @@ import notFoundError from "../errors/notFound.js";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import User from "../model/user.mongo.js";
+import { v2 as cloudinary } from "cloudinary";
+import fileSizeFormatter from "../services/uploadImage.js"
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
   const { userId } = req.user;
-  const { title, desc, categories, color, size, price } = req.body; // add image
+  const { title, desc, categories, color, size, price, quantity } = req.body; // add image
 
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
+  console.log("Req file: ", req.file);
+
+  // Handle Image upload
+  let fileData = {};
+  if (req.file) {
+    // Save image to cloudinary
+    let uploadedFile;
+
+    uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+      folder: "Ecommerce API",
+      resource_type: "image",
+    });
+    fileData = {
+      fileName: req.file.originalname,
+      filePath: uploadedFile.secure_url,
+      fileType: req.file.mimetype,
+      fileSize: fileSizeFormatter(req.file.size, 2),
+    };
+  }
+
+  console.log("Uploaded file: ", uploadedFile);
+
   const product = await Product.create({
     user: userId,
     title,
@@ -18,7 +42,9 @@ export async function httpAddNewProduct(req, res) {
     color,
     size,
     price,
+    quantity,
   });
+  console.log("Products: ", product);
   const { __v, ...others } = product._doc;
 
   res.status(StatusCodes.CREATED).json(others);

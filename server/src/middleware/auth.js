@@ -4,7 +4,7 @@ import UnAuthorizedError from "../errors/unauthorized.js";
 import { createClient } from "redis";
 const redisClient = createClient({ url: process.env.REDIS_URI });
 
-import User from "../model/user/user.mongo.js";
+import User from "../model/user.mongo.js";
 
 export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -47,7 +47,7 @@ export async function verifyUser(req, res, next) {
 }
 
 // VERIFY ADMIN WITH ID
-export function  verifyAdminWithId(req, res, next) {
+export function verifyAdminWithId(req, res, next) {
   if (req.user.isAdmin === true || req.params.id === req.user.userId) {
     next();
   } else {
@@ -56,7 +56,7 @@ export function  verifyAdminWithId(req, res, next) {
 }
 
 // VERIFY ADMIN WITHOUT ID
-export async function verifyAdmin (req, res, next) {
+export async function verifyAdmin(req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user || user.isAdmin === true) {
     next();
@@ -64,5 +64,3 @@ export async function verifyAdmin (req, res, next) {
     throw new UnAuthorizedError("Access Denied admin");
   }
 }
-
-

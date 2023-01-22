@@ -1,6 +1,6 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
-import User from "../model/user/user.mongo.js";
+import User from "../model/user.mongo.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
@@ -201,7 +201,7 @@ export async function forgotPassword(req, res) {
     await sendEmail(message, subject, sentFrom, sendTo, replyTo);
     return res
       .status(StatusCodes.OK)
-      .json({ msg: "Resent sent", success: true });
+      .json({ msg: "Email sent", success: true });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error("Email not sent, please try again");

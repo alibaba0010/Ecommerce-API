@@ -1,8 +1,8 @@
 import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
-import Product from "../model/product/product.mongo.js";
+import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
-import User from "../model/user/user.mongo.js";
+import User from "../model/user.mongo.js";
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
   const { userId } = req.user;

@@ -1,9 +1,10 @@
-import Cart from "../model/cart/cart.mongo.js";
+import Cart from "../model/cart.mongo.js";
 import notFoundError from "../errors/notFound.js";
 
 import { StatusCodes } from "http-status-codes";
 
 import { getPagination } from "../services/query.js";
+import BadRequestError from "../errors/badRequest.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {
@@ -21,18 +22,22 @@ export async function httpCreateCart(req, res) {
 // UPDATE CART
 export async function httpUpdateCart(req, res) {
   const { id: cartId } = req.params;
-  const {products} = req.body;
-  const updateCart = await Cart.findByIdAndUpdate(
-    cartId,
-    { $set: cart },
-    { new: true }
-  );
-  return res.status(204).json(updateCart);
+  const { products } = req.body;
+
+  const cart = await Cart.findById(cartId);
+  if (!cart) throw new notFoundError("Unable to get cart");
+  if (!products) throw new BadRequestError("Please provide products");
+  cart.products = products;
+  const updateCart = await cart.save();
+
+  const { __v, ...others } = updateCart._doc;
+
+  return res.status(204).json(others);
 }
 
 // DELETE CART
 export async function httpDeleteCart(req, res) {
-  const cartId = req.params.id;
+  const { id: cartId } = req.params;
   await Cart.findByIdAndDelete(cartId);
   if (!cartId) {
     return res.status(404).json({

@@ -1,11 +1,17 @@
 import multer, { diskStorage } from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define file storage
 const storage = diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads");
+    cb(null, path.join(__dirname, "../uploads"));
   },
   filename: function (req, file, cb) {
+
     cb(
       null,
       new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname

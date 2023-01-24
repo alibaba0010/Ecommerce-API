@@ -8,12 +8,18 @@ import {
 } from "../controller/product.controller.js";
 
 import { authenticateUser, verifyAdmin } from "../middleware/auth.js";
+import { upload } from "../services/uploadImage.js";
 
 const productRouter = Router();
 
 productRouter
   .route("/")
-  .post(authenticateUser, verifyAdmin, httpAddNewProduct)
+  .post(
+    authenticateUser,
+    verifyAdmin,
+    upload.single("image"),
+    httpAddNewProduct
+  )
   .get(httpGetAllProducts);
 productRouter
   .route("/:id")

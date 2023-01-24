@@ -6,20 +6,19 @@ import productRouter from "./routes/product.router.js";
 import cartRouter from "./routes/cart.router.js";
 import dotenv from "dotenv";
 import { errorHandler } from "./errors/error.js";
-
 import { routeError } from "./errors/route.error.js";
 dotenv.config();
 
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url); 
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 app
   .use(json())
-  // .use("/uploads", express.static(path.join(__dirname, ".", "uploads")))
+  .use("/uploads", express.static(path.join(__dirname, ".", "uploads")))
   .use("/v1", userRouter)
   // .use("/v1", orderRouter)
   .use("/v1/products", productRouter)

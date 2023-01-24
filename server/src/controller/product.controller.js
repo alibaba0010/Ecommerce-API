@@ -3,27 +3,31 @@ import notFoundError from "../errors/notFound.js";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import User from "../model/user.mongo.js";
-import { v2 as cloudinary } from "cloudinary";
-import fileSizeFormatter from "../services/uploadImage.js"
+import cloudinary from "../services/cloudinary.js";
+import { fileSizeFormatter } from "../services/uploadImage.js";
+import BadRequestError from "../errors/badRequest.js";
+
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
   const { userId } = req.user;
-  const { title, desc, categories, color, size, price, quantity } = req.body; // add image
+  const { title, desc, categories, color, size, price, quantity, image } = req.body; // add image
 
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
-  console.log("Req file: ", req.file);
+    // Handle Imageupload
+    let fileData = {};
+    const file = req.file.destination
+    const file1= req.file
 
-  // Handle Image upload
-  let fileData = {};
+    console.log("image: ", file1);
   if (req.file) {
+    console.log(cloudinary.uploader.upload);
     // Save image to cloudinary
-    let uploadedFile;
-
-    uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+    const uploadedFile = await cloudinary.uploader.upload(req.file.path, {
       folder: "Ecommerce API",
       resource_type: "image",
     });
+    // console.log("Uploaded file: ", uploadedFile);
     fileData = {
       fileName: req.file.originalname,
       filePath: uploadedFile.secure_url,
@@ -31,8 +35,6 @@ export async function httpAddNewProduct(req, res) {
       fileSize: fileSizeFormatter(req.file.size, 2),
     };
   }
-
-  console.log("Uploaded file: ", uploadedFile);
 
   const product = await Product.create({
     user: userId,
@@ -43,6 +45,7 @@ export async function httpAddNewProduct(req, res) {
     size,
     price,
     quantity,
+    image: fileData,
   });
   console.log("Products: ", product);
   const { __v, ...others } = product._doc;
@@ -61,8 +64,8 @@ export async function httpUpdateProduct(req, res) {
 
   const updateProduct = await Product.findByIdAndUpdate(
     { _id: productId },
-    { $set: product },
-    { new: true }
+    // { $set: product },
+    { new: true, runValidators: true }
   );
   if (!updateProduct) throw new notFoundError(`No product with id ${userId}`);
 

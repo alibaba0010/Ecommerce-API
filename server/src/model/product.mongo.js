@@ -21,20 +21,24 @@ const ProductSchema = new Schema(
     categories: {
       // More than one categroies
       type: Array,
+      required: [true, "Please provide categories"],
     },
     color: {
       type: String,
+      required: [true, "Please provide color information"],
+
     },
     size: {
       type: String,
-      required: [true, "Please provide size"],
+      required: [true, "Please provide size information"],
     },
     price: {
       type: Number,
-      required: [true, "Please provide price"],
+      required: [true, "Please provide price information"],
     },
     image: {
       type: Object,
+      required: [true, "Please provide an image"],
     },
     quantity: {
       type: Number,

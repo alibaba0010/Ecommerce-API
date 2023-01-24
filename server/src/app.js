@@ -23,7 +23,7 @@ const app = express();
 app
   .use(json())
   // .use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }))
-  .use("/products", express.static(path.join(__dirname, "./", "uploads")))
+  .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   // .use("/v1", orderRouter)
   .use("/v1/products", productRouter)

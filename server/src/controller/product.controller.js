@@ -10,24 +10,22 @@ import BadRequestError from "../errors/badRequest.js";
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
   const { userId } = req.user;
-  const { title, desc, categories, color, size, price, quantity, image } = req.body; // add image
+  const { title, desc, categories, color, size, price, quantity, image } =
+    req.body; // add image
 
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
-    // Handle Imageupload
-    let fileData = {};
-    const file = req.file.destination
-    const file1= req.file
-
-    console.log("image: ", file1);
+  // Handle Imageupload
+  let fileData = {};
+console.log(req.file);
   if (req.file) {
-    console.log(cloudinary.uploader.upload);
     // Save image to cloudinary
+
     const uploadedFile = await cloudinary.uploader.upload(req.file.path, {
       folder: "Ecommerce API",
       resource_type: "image",
     });
-    // console.log("Uploaded file: ", uploadedFile);
+    console.log("Uploaded file: ", uploadedFile);
     fileData = {
       fileName: req.file.originalname,
       filePath: uploadedFile.secure_url,
@@ -47,7 +45,6 @@ export async function httpAddNewProduct(req, res) {
     quantity,
     image: fileData,
   });
-  console.log("Products: ", product);
   const { __v, ...others } = product._doc;
 
   res.status(StatusCodes.CREATED).json(others);

@@ -1,5 +1,9 @@
 import express, { json } from "express";
 import "express-async-errors";
+
+import pkg from "express-fileupload";
+const fileUpload = pkg;
+
 import userRouter from "./routes/user.router.js";
 // import orderRouter from "./routes/order.router.js";
 import productRouter from "./routes/product.router.js";
@@ -18,7 +22,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app
   .use(json())
-  .use("/uploads", express.static(path.join(__dirname, ".", "uploads")))
+  // .use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }))
+  .use("/products", express.static(path.join(__dirname, "./", "uploads")))
   .use("/v1", userRouter)
   // .use("/v1", orderRouter)
   .use("/v1/products", productRouter)

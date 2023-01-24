@@ -2,7 +2,7 @@ import pkg from "mongoose";
 const { Schema, model, Types } = pkg;
 
 const CartSchema = new Schema({
-  userId: {
+  user: {
     type: Types.ObjectId,
     ref: "User",
     required: [true, "Please provide username"],

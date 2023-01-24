@@ -2,8 +2,6 @@ import { Router } from "express";
 
 import {
   authenticateUser,
-  verifyAdminWithId,
-  verifyUserWithId,
   verifyUser,
   verifyAdmin,
 } from "../middleware/auth.js";

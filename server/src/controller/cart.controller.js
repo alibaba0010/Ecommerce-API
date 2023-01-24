@@ -8,7 +8,7 @@ import BadRequestError from "../errors/badRequest.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {
-  const { userId } = req.user.userId;
+  const { userId } = req.user;
   if (!userId) throw new notFoundError("Login to add Product to cart");
 
   const { products } = req.body;

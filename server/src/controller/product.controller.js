@@ -4,7 +4,7 @@ import notFoundError from "../errors/notFound.js";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import User from "../model/user.mongo.js";
-import { fileSizeFormatter } from "../services/uploadImage.js";
+import { fileSizeFormatter } from "../middleware/uploadImage.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 // Configuration
@@ -104,7 +104,7 @@ export async function httpUpdateProduct(req, res) {
     size,
     price,
     quantity,
-    image,
+    image: Object.keys(fileData).length === 0 ? image : fileData,
   };
   const updateProduct = await Product.findByIdAndUpdate(
     { _id: productId },
@@ -126,7 +126,6 @@ export async function httpDeleteProduct(req, res) {
   if (!product)
     throw new notFoundError(`Unable to get product with id ${productId}`);
 
-  console.log("Product User: ", product.user);
   // Match product to its user
   if (product.user.toString() !== userId)
     throw new UnAuthorizedError("Unauthorized User");

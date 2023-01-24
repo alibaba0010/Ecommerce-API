@@ -1,8 +1,7 @@
 import express, { json } from "express";
 import "express-async-errors";
 
-import pkg from "express-fileupload";
-const fileUpload = pkg;
+
 
 import userRouter from "./routes/user.router.js";
 // import orderRouter from "./routes/order.router.js";
@@ -22,7 +21,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app
   .use(json())
-  // .use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } }))
+  .use("/", (req,res) => res.send("Ecommerce-API Homepage"))
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   // .use("/v1", orderRouter)

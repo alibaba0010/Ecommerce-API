@@ -11,7 +11,6 @@ const storage = diskStorage({
     cb(null, path.join(__dirname, "../uploads"));
   },
   filename: function (req, file, cb) {
-
     cb(
       null,
       new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname
@@ -28,7 +27,7 @@ function fileFilter(req, file, cb) {
   ) {
     cb(null, true);
   } else {
-    cb(null, false);
+    cb("File can only be in png, jpg, jpeg", false);
   }
 }
 

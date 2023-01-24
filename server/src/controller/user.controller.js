@@ -84,9 +84,7 @@ export async function updateUser(req, res) {
   user.username = username;
 
   const updatedUser = await user.save();
-  console.log(updateUser);
 
-  console.log(updateUser);
   if (!updatedUser) throw new notFoundError(`No user with id ${userId}`);
   const { email, id } = updatedUser;
 

@@ -8,7 +8,7 @@ import {
 } from "../controller/product.controller.js";
 
 import { authenticateUser, verifyAdmin } from "../middleware/auth.js";
-import { upload } from "../services/uploadImage.js";
+import { upload } from "../middleware/uploadImage.js";
 
 const productRouter = Router();
 

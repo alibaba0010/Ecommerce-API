@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app
   .use(json())
-  .use("/", (req,res) => res.send("Ecommerce-API Homepage"))
+  .get("/", (req,res) => res.send("Ecommerce-API Homepage"))
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   // .use("/v1", orderRouter)

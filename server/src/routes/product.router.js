@@ -23,7 +23,12 @@ productRouter
   .get(httpGetAllProducts);
 productRouter
   .route("/:id")
-  .patch(authenticateUser, verifyAdmin, httpUpdateProduct)
+  .patch(
+    authenticateUser,
+    verifyAdmin,
+    upload.single("image"),
+    httpUpdateProduct
+  )
   .delete(authenticateUser, verifyAdmin, httpDeleteProduct)
   .get(httpGetProduct);
 

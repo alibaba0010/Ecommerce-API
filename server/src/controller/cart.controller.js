@@ -10,8 +10,9 @@ import BadRequestError from "../errors/badRequest.js";
 export async function httpCreateCart(req, res) {
   const { userId } = req.user;
   if (!userId) throw new notFoundError("Login to add Product to cart");
-
   const { products } = req.body;
+  const findProductId = products.find((product) => product.productId);
+  console.log(products);
   const carts = await Cart.create({ user: userId, products });
 
   const { __v, ...others } = carts._doc;

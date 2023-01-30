@@ -11,7 +11,6 @@ import jwt from "jsonwebtoken";
 const exp = process.env.JWT_LIFETIME;
 const redisClient = createClient({ url: process.env.REDIS_URI });
 
-
 const UserSchema = new Schema(
   {
     username: {
@@ -59,8 +58,7 @@ UserSchema.methods.createJWT = async function () {
     }
   );
   await redisClient.connect();
-  await redisClient.setEx(this.id,exp, signInToken);
-  // const redisToken = await redisClient.get(stringifyId);
+  await redisClient.setEx(this.id, exp, signInToken);
   await redisClient.disconnect();
   return signInToken;
 };

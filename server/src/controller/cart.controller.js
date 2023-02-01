@@ -34,10 +34,9 @@ export async function httpUpdateCart(req, res) {
   const { products } = req.body;
 
   const ProductId = products.map((product) => product.productId);
-  console.log("pr", ProductId.toString());
   const checkProduct = await Product.findById(ProductId.toString());
 
-  if (!checkProduct) throw new notFoundError("Unable to add Product to cart");
+  if (!checkProduct) throw new notFoundError("Unable to get Product to cart");
 
   const cart = await Cart.findById(cartId);
   if (!cart) throw new notFoundError("Unable to get cart");

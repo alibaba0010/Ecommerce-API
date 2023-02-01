@@ -59,3 +59,5 @@ async function start() {
 }
 
 start()
+
+validate quantity not to be more than the quantity in product

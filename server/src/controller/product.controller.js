@@ -155,7 +155,7 @@ export async function httpGetProduct(req, res) {
 // GET ALL PRODUCTS
 export async function httpGetAllProducts(req, res) {
   const { skip, limit } = getPagination(req.query);
-  const products = await Product.find({}, { _id: 0, __v: 0 })
+  const products = await Product.find({}, {  __v: 0 })
     .sort("createdAt")
     .skip(skip)
     .limit(limit);

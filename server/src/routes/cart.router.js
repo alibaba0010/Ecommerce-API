@@ -19,10 +19,10 @@ import {
 cartRouter
   .route("/cart")
   .post(authenticateUser, verifyUser, httpCreateCart)
-  .patch(authenticateUser, verifyUser, httpUpdateCart)
   .get(authenticateUser, verifyUser, httpGetAllCarts);
-cartRouter
+  cartRouter
   .route("/cart/:id")
+  .patch(authenticateUser, verifyUser, httpUpdateCart)
   .delete(authenticateUser, verifyAdmin, httpDeleteCart)
   .get(authenticateUser, verifyUser, httpGetCart);
 

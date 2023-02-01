@@ -38,6 +38,7 @@ export function verifyUserWithId(req, res, next) {
 }
 // VERIFY USERS WITHOUT ID
 export async function verifyUser(req, res, next) {
+
   const user = await User.findById(req.user.userId).select("-password");
   if (user) {
     next();

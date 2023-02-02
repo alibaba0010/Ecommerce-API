@@ -1,15 +1,14 @@
 import pkg from "mongoose";
 const { Schema, model, Types } = pkg;
 
-const SingleOrderItemSchema = new Schema({
-  name: { type: String, required: true },
-  image: { type: String, required: true },
-  price: { type: Number, required: true },
-  amount: { type: Number, required: true },
+const SingleItemOrderSchema = new Schema({
+  name: { type: String, required: [true, "Please provide name"], },
+  image: { type: String, required: [true, "Please provide image"], },
+  price: { type: Number, required: [true, "Please provide price"], },
+  amount: { type: Number, required: [true, "Please provide amount"], },
   product: {
     type: mongoose.Schema.ObjectId,
     ref: "Product",
-    required: true,
   },
 });
 
@@ -18,32 +17,31 @@ const OrderSchema = new Schema(
     userId: {
       type: Types.ObjectId,
       ref: "User",
-      required: [true, "Please provide username"],
     },
     tax: {
       type: Number,
-      required: true,
+      required: [true, "Please provide username"],
     },
     subtotal: {
       type: Number,
-      required: true,
+      required: [true, "Please provide username"],
     },
     total: {
       type: Number,
-      required: true,
+      required: [true, "Please provide username"],
     },
     shippingFee: {
       type: Number,
-      required: true,
+      required: [true, "Please provide username"],
     },
-    orderItems: [SingleOrderItemSchema],
+    orderItems: [SingleItemOrderSchema],
     amount: {
       type: Number,
-      required: true,
+      required: [true, "Please provide username"],
     },
     address: {
       type: Object,
-      required: true,
+      required: [true, "Please provide username"],
     },
     status: {
       type: String,
@@ -53,7 +51,7 @@ const OrderSchema = new Schema(
     },
     clientSecret: {
       type: String,
-      required: true,
+      required: [true, "Please provide username"],
     },
     paymentIntentId: {
       type: String,

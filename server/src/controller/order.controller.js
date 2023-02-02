@@ -1,6 +1,11 @@
-import Order from "../model/order/order.mongo.js";
-import Product from "../model/product/product.mongo.js";
-import { addNewOrder } from "../model/order/order.model.js";
+import { StatusCodes } from "http-status-codes";
+
+import notFoundError from "../errors/notFound.js";
+import BadRequestError from "../errors/badRequest.js";
+import UnAuthorizedError from "../errors/unauthorized.js";
+
+import Product from "../model/product.mongo.js";
+import Order from "../model/order.mongo.js";
 
 import { getPagination } from "../services/query.js";
 
@@ -8,12 +13,12 @@ import { getPagination } from "../services/query.js";
 export async function httpCreateOrder(req, res) {
   const order = req.body;
   await addNewOrder(order);
-  return res.status(201).json(order);
+  return res.status(StatusCodes.CREATED).json(order);
 }
 
 // UPDATE ORDER
 export async function httpUpdateOrder(req, res) {
-  const orderId = req.params.id;
+  const { id: orderId } = req.params;
   const order = req.body;
   const updateOrder = await Order.findByIdAndUpdate(
     orderId,

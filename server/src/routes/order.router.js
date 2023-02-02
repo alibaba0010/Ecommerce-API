@@ -4,7 +4,7 @@ import { verifyTokenAndAdmin } from "../services/auth.js";
 
 import {
   authenticateUser,
-  verifyAdminWithId,
+  verifyAdmin,
   verifyUser,
 } from "../middleware/auth.js";
 
@@ -22,12 +22,12 @@ import {
 orderRouter
   .route("/order")
   .post(authenticateUser, verifyUser, httpCreateOrder)
-  .get(httpGetAllOrders);
+  .get(authenticateUser, verifyUser, httpGetAllOrders);
 orderRouter
   .route("/order/:id")
-  .patch(authenticateUser,verifyTokenAndAdmin, httpUpdateOrder)
-  .delete(httpDeleteOrder)
-  .get(httpGetOrder);
-orderRouter.get("/income", authenticateUser, verifyTokenAndAdmin, httpGetIncome);
+  .patch(authenticateUser, verifyAdmin, httpUpdateOrder)
+  .delete(authenticateUser, verifyAdmin, httpDeleteOrder)
+  .get(authenticateUser, verifyUser, httpGetOrder);
+orderRouter.get("/income", authenticateUser, verifyAdmin, httpGetIncome);
 
 export default orderRouter;

@@ -1,6 +1,6 @@
 import Cart from "../model/cart.mongo.js";
 import notFoundError from "../errors/notFound.js";
-
+import UnAuthorizedError from "../errors/unauthorized.js";
 import { StatusCodes } from "http-status-codes";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
@@ -72,8 +72,12 @@ export async function httpDeleteCart(req, res) {
 export async function httpGetCart(req, res) {
   const { id: cartId } = req.params;
   const { userId } = req.user;
+  const { skip, limit } = getPagination(req.query);
 
-  const cart = await Cart.findById(cartId);
+  const cart = await Cart.findById(cartId)
+    .sort("createdAt")
+    .skip(skip)
+    .limit(limit);
   if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
 
   // Match product to its user

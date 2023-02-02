@@ -14,10 +14,8 @@ export async function httpCreateCart(req, res) {
   const { products } = req.body;
 
   const ProductId = products.map((product) => product.productId);
-  
-  console.log("p", ProductId.toString());
-  const checkProduct = await Product.findById(ProductId.toString());
 
+  const checkProduct = await Product.findById(ProductId.toString());
 
   if (!checkProduct) throw new notFoundError("Unable to add Product to cart");
 
@@ -32,22 +30,20 @@ export async function httpCreateCart(req, res) {
 export async function httpUpdateCart(req, res) {
   const { id: cartId } = req.params;
   const { products } = req.body;
-
-  const ProductId = products.map((product) => product.productId);
-  const checkProduct = await Product.findById(ProductId.toString());
+  const { productId } = products;
+  const checkProduct = await Product.findById(productId);
 
   if (!checkProduct) throw new notFoundError("Unable to get Product to cart");
 
   const cart = await Cart.findById(cartId);
   if (!cart) throw new notFoundError("Unable to get cart");
-
   if (!products)
     throw new BadRequestError("Please provide products to add to cart");
 
-  cart.products = products;
-  const updateCart = await cart.save();
+  cart.products.push(products);
+  cart.save()
 
-  const { __v, ...others } = updateCart._doc;
+  const { __v, ...others } = cart._doc;
 
   return res.status(StatusCodes.OK).json(others);
 }

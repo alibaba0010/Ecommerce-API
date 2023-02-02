@@ -41,7 +41,7 @@ export async function httpUpdateCart(req, res) {
     throw new BadRequestError("Please provide products to add to cart");
 
   cart.products.push(products);
-  cart.save()
+  cart.save();
 
   const { __v, ...others } = cart._doc;
 
@@ -68,13 +68,13 @@ export async function httpDeleteCart(req, res) {
   });
 }
 
-// GET A SPECIFIC CART
+// GET A SPECIFIC CART WITH ALL THE PRODUCTS
 export async function httpGetCart(req, res) {
   const { id: cartId } = req.params;
   const { userId } = req.user;
 
   const cart = await Cart.findById(cartId);
-  if (!cart) throw new notFoundError(`Unable to get product with id ${cartId}`);
+  if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
 
   // Match product to its user
   if (cart.user.toString() !== userId)
@@ -84,23 +84,36 @@ export async function httpGetCart(req, res) {
     cart,
     request: {
       type: "GET",
-      url: `http://localhost:2000/v1/products/${cart._id}`,
+      url: `http://localhost:2000/v1/cart/${cart._id}`,
     },
   });
 }
 
-// GET ALL CARTS
-export async function httpGetAllCarts(req, res) {
+// GET A SPECIFIC PRODUCT FROM A CART
+export const httpGetSpecificProduct = async (req, res) => {
+  const { cartId, productId } = req.params;
   const { userId } = req.user;
 
-  const { skip, limit } = getPagination();
-  const cartUser = await Cart.findById(userId);
+  const cart = await Cart.findById(cartId);
+  if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
   // Match product to its user
-  if (!cartUser) throw new UnAuthorizedError("Unauthorized User");
+  if (cart.user.toString() !== userId)
+    throw new UnAuthorizedError("Unauthorized User");
 
-  const carts = await Cart.find({}, { _id: 0, __v: 0 })
-    .sort({ id: 1 })
-    .skip(skip)
-    .limit(limit);
-  return await res.status(200).json(carts);
-}
+  const ProductId = cart.products.map((product) => product.productId);
+
+  if (ProductId.toString() !== productId)
+    throw new notFoundError("Unable to find Product");
+
+  const product = await Product.findById(productId);
+  if (!product)
+    throw new notFoundError(`Unable to get product with id ${productId}`);
+
+  return await res.status(StatusCodes.OK).json({
+    product,
+    request: {
+      type: "GET",
+      url: `http://localhost:2000/v1/products/${product._id}`,
+    },
+  });
+};

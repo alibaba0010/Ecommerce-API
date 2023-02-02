@@ -13,17 +13,18 @@ import {
   httpUpdateCart,
   httpDeleteCart,
   httpGetCart,
-  httpGetAllCarts,
+  httpGetSpecificProduct,
 } from "../controller/cart.controller.js";
 
+cartRouter.route("/cart").post(authenticateUser, verifyUser, httpCreateCart);
 cartRouter
-  .route("/cart")
-  .post(authenticateUser, verifyUser, httpCreateCart)
-  .get(authenticateUser, verifyUser, httpGetAllCarts);
-  cartRouter
   .route("/cart/:id")
   .patch(authenticateUser, verifyUser, httpUpdateCart)
   .delete(authenticateUser, verifyAdmin, httpDeleteCart)
   .get(authenticateUser, verifyUser, httpGetCart);
+
+cartRouter
+  .route("/cart/:cartId/:productId")
+  .get(authenticateUser, verifyUser, httpGetSpecificProduct);
 
 export default cartRouter;

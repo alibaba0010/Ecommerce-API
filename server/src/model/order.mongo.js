@@ -1,16 +1,16 @@
 import pkg from "mongoose";
 const { Schema, model, Types } = pkg;
 
-const SingleItemOrderSchema = new Schema({
-  name: { type: String, required: [true, "Please provide name"], },
-  image: { type: String, required: [true, "Please provide image"], },
-  price: { type: Number, required: [true, "Please provide price"], },
-  amount: { type: Number, required: [true, "Please provide amount"], },
-  product: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Product",
-  },
-});
+// const SingleItemOrderSchema = new Schema({
+//   name: { type: String, required: [true, "Please provide name"], },
+//   image: { type: String, required: [true, "Please provide image"], },
+//   price: { type: Number, required: [true, "Please provide price"], },
+//   amount: { type: Number, required: [true, "Please provide amount"], },
+//   product: {
+//     type: mongoose.Schema.ObjectId,
+//     ref: "Product",
+//   },
+// });
 
 const OrderSchema = new Schema(
   {
@@ -20,7 +20,7 @@ const OrderSchema = new Schema(
     },
     tax: {
       type: Number,
-      required: [true, "Please provide username"],
+      required: [true, "Please provide tax information"],
     },
     subtotal: {
       type: Number,

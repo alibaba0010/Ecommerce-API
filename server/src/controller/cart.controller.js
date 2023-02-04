@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import BadRequestError from "../errors/badRequest.js";
+import User from "../model/user.mongo.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {
@@ -119,5 +120,27 @@ export const httpGetSpecificProduct = async (req, res) => {
       type: "GET",
       url: `http://localhost:2000/v1/products/${product._id}`,
     },
+  });
+};
+
+// GET ALL CARTS BY ADMIN
+export const httpGetAllCarts = async (req, res) => {
+  const { skip, limit } = getPagination(req.query);
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  console.log("user: ", user);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Unable to get all carts");
+
+  const carts = await Cart.find({}, { __v: 0 })
+    .sort("createdAt")
+    .skip(skip)
+    .limit(limit);
+  if (!carts) throw new notFoundError("Unable to get products");
+  return await res.status(StatusCodes.OK).json({
+    carts,
+    request: { type: "GET", url: "http://localhost:2000/v1/cart" },
   });
 };

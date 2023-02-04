@@ -16,7 +16,6 @@ import {
 import {
   authenticateUser,
   verifyAdmin,
-  verifyAdminWithId,
   verifyUser,
 } from "../middleware/auth.js";
 

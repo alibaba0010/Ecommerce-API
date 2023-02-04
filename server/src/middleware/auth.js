@@ -28,7 +28,7 @@ export const authenticateUser = async (req, res, next) => {
   }
 };
 
-// VERIFY USER
+// VERIFY USER WITH ID
 export function verifyUserWithId(req, res, next) {
   if (req.params.id === req.user.userId) {
     next();

@@ -7,6 +7,7 @@ import User from "../model/user.mongo.js";
 import { fileSizeFormatter } from "../middleware/uploadImage.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
+
 // Configuration
 export default cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -162,10 +163,10 @@ export async function httpGetAllProducts(req, res) {
   if (!products) throw new notFoundError("Unable to get products");
   return await res.status(StatusCodes.OK).json({
     products,
-    request: { type: "POST", url: "http://localhost:2000/v1/products" },
+    request: { type: "GET", url: "http://localhost:2000/v1/products" },
   });
 }
-async function getProducts(req, res) {
+export async function getAllProducts(req, res) {
   const { title, color, categories, size, nFilters } = req.query; // price check in postman
   const queryObject = {};
 
@@ -193,7 +194,7 @@ async function getProducts(req, res) {
     });
   }
   console.log(queryObject);
-  let result = Product.find(queryObject);
+  let result =  Product.find(queryObject);
   console.log("results: ", result);
 
   const { skip, limit } = getPagination(req.query);

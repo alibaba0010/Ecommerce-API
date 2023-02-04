@@ -9,10 +9,31 @@ import Order from "../model/order.mongo.js";
 
 import { getPagination } from "../services/query.js";
 
+// ADD Address and Payment Information
+export const httpAddAddress = async (req, res) => {
+  const { address, paymentInformation } = req.body;
+  const { userId } = req.user;
+  const check = await Order.findById(userId);
+  console.log(check);
+  if (check.address !== {} || check.paymentInformation !== {}) {
+    return res.redirect("http://localhost:2000/v1/order");
+  } else {
+    if (!address || !paymentInformation)
+      throw new BadRequestError(
+        "Please provide address and payment Information"
+      );
+    check.address = address;
+    check.paymentInformation = paymentInformation;
+    await check.save();
+    return res
+      .status(StatusCodes.CREATED)
+      .json({ msg: "Address successfully added" });
+  }
+};
 // CREATE ORDER
 export async function httpCreateOrder(req, res) {
-  const order = req.body;
-  await addNewOrder(order);
+  const {} = req.body;
+  await Order.create();
   return res.status(StatusCodes.CREATED).json(order);
 }
 
@@ -56,7 +77,7 @@ export async function httpGetOrder(req, res) {
 
 // GET ALL ORDERS
 export async function httpGetAllOrders(req, res) {
-  const { skip, limit } = getPagination();
+  const { skip, limit } = getPagination(req.query);
   const orders = await Order.find({}, { _id: 0, __v: 0 })
     .sort({ id: 1 })
     .skip(skip)
@@ -73,5 +94,5 @@ export async function httpGetIncome(req, res) {
     { $project: { month: { $month: "$createdAt" }, sales: "$amount" } },
     { $group: { _id: "$month", total: { $sum: "$sales" } } },
   ]);
-  return await res.status(200).json(data);
+  return await res.status(StatusCodes.OK).json(data);
 }

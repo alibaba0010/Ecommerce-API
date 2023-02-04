@@ -14,9 +14,13 @@ import {
   httpDeleteCart,
   httpGetCart,
   httpGetSpecificProduct,
+  httpGetAllCarts,
 } from "../controller/cart.controller.js";
 
-cartRouter.route("/cart").post(authenticateUser, verifyUser, httpCreateCart);
+cartRouter
+  .route("/cart")
+  .post(authenticateUser, verifyUser, httpCreateCart)
+  .get(authenticateUser, verifyAdmin, httpGetAllCarts);
 cartRouter
   .route("/cart/:id")
   .patch(authenticateUser, verifyUser, httpUpdateCart)

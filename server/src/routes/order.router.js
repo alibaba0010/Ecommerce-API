@@ -22,7 +22,7 @@ import {
 orderRouter
   .route("/order")
   .post(authenticateUser, verifyUser, httpCreateOrder)
-  .get(authenticateUser, verifyUser, httpGetAllOrders);
+  .get(authenticateUser, verifyAdmin, httpGetAllOrders);
 orderRouter
   .route("/order/:id")
   .patch(authenticateUser, verifyAdmin, httpUpdateOrder)

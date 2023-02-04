@@ -5,6 +5,7 @@ import {
   httpDeleteProduct,
   httpGetProduct,
   httpGetAllProducts,
+  getAllProducts,
 } from "../controller/product.controller.js";
 
 import { authenticateUser, verifyAdmin } from "../middleware/auth.js";
@@ -20,7 +21,7 @@ productRouter
     upload.single("image"),
     httpAddNewProduct
   )
-  .get(httpGetAllProducts);
+  .get(httpGetAllProducts); // getAllProducts
 productRouter
   .route("/:id")
   .patch(

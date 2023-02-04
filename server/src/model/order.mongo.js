@@ -18,20 +18,22 @@ const OrderSchema = new Schema(
     ],
     tax: {
       type: Number,
-      required: [true, "Please provide tax information"],
+      // required: [true, "Please provide tax information"],
     },
     subtotal: { type: Number },
-    total: { type: Number },
     shippingFee: { type: Number },
     amount: { type: Number },
     address: {
-      type: Object,
-      required: [true, "Please provide address information"],
+      type: String,
+      // required: [true, "Please provide address information"],
     },
     status: {
       type: String,
       enum: ["pending", "failed", "paid", "delivered", "canceled"],
       default: "pending",
+    },
+    paymentInformation: {
+      type: String,
     },
     // clientSecret: {
     //   type: String,

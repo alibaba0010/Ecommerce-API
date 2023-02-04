@@ -10,7 +10,8 @@ import User from "../model/user.mongo.js";
 // CREATE CART
 export async function httpCreateCart(req, res) {
   const { userId } = req.user;
-  if (!userId) throw new notFoundError("Login to add Product to cart");
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Unable to get user");
 
   const { products } = req.body;
 
@@ -32,6 +33,11 @@ export async function httpUpdateCart(req, res) {
   const { id: cartId } = req.params;
   const { products } = req.body;
   const { productId } = products;
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Unable to get user");
+
   const checkProduct = await Product.findById(productId);
 
   if (!checkProduct) throw new notFoundError("Unable to get Product to cart");
@@ -78,7 +84,11 @@ export async function httpDeleteCart(req, res) {
 export async function httpGetCart(req, res) {
   const { id: cartId } = req.params;
   const { userId } = req.user;
+
   const { skip, limit } = getPagination(req.query);
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Login to add Product to cart");
 
   const cart = await Cart.findById(cartId)
     .sort("createdAt")
@@ -103,6 +113,9 @@ export async function httpGetCart(req, res) {
 export const httpGetSpecificProduct = async (req, res) => {
   const { cartId, productId } = req.params;
   const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Unable to find user");
 
   const cart = await Cart.findById(cartId);
   if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);

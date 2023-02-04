@@ -40,8 +40,7 @@ export async function httpAddNewAdmin(req, res) {
   if (password !== confirmPassword)
     throw new BadRequestError("Password doesn't match");
 
-  // if (!username || !email || !password || !confirmPassword)
-  if ((!username, !email, !password, !confirmPassword))
+  if (!username || !email || !password || !confirmPassword)
     throw new BadRequestError("Please fill all required field");
 
   const user = await User.create({ username, email, password, isAdmin });
@@ -118,7 +117,7 @@ export async function getAllUserByAdmin(req, res) {
 export async function getUserByAdmin(req, res) {
   const { id } = req.params;
   const { userId } = req.user;
-  
+
   const admin = await User.findById(userId);
 
   if (admin.isAdmin !== true)
@@ -169,6 +168,10 @@ export const updateUserPassword = async (req, res) => {
 // LOGOUT USER
 export const logOutUser = async (req, res) => {
   const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Unable to get user");
+
   await redisClient.connect();
   const token = await redisClient.get(userId);
   const check = await redisClient.del(token);

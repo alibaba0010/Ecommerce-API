@@ -4,7 +4,7 @@ import "express-async-errors";
 
 
 import userRouter from "./routes/user.router.js";
-// import orderRouter from "./routes/order.router.js";
+import orderRouter from "./routes/order.router.js";
 import productRouter from "./routes/product.router.js";
 import cartRouter from "./routes/cart.router.js";
 import dotenv from "dotenv";
@@ -24,7 +24,7 @@ app
   .get("/", (req,res) => res.send("Ecommerce-API Homepage"))
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
-  // .use("/v1", orderRouter)
+  .use("/v1", orderRouter)
   .use("/v1/products", productRouter)
   .use("/v1", cartRouter)
   .use(routeError)

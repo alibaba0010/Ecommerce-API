@@ -1,5 +1,4 @@
 import { StatusCodes } from "http-status-codes";
-
 import notFoundError from "../errors/notFound.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
@@ -13,18 +12,20 @@ import { getPagination } from "../services/query.js";
 export const httpAddAddress = async (req, res) => {
   const { address, paymentInformation } = req.body;
   const { userId } = req.user;
-  const check = await Order.findById(userId);
-  console.log(check);
-  if (check.address !== {} || check.paymentInformation !== {}) {
-    return res.redirect("http://localhost:2000/v1/order");
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Login to Order Product");
+  if (user.address || user.paymentInformation) {
+    // return res.redirect("http://localhost:2000/v1/order/new");
+    return res.status(StatusCodes.OK).json({msg: "Address already exists"})
   } else {
     if (!address || !paymentInformation)
       throw new BadRequestError(
         "Please provide address and payment Information"
       );
-    check.address = address;
-    check.paymentInformation = paymentInformation;
-    await check.save();
+    user.address = address;
+    user.paymentInformation = paymentInformation;
+    await user.save();
+    await Order.create({ address, paymentInformation });
     return res
       .status(StatusCodes.CREATED)
       .json({ msg: "Address successfully added" });
@@ -32,9 +33,36 @@ export const httpAddAddress = async (req, res) => {
 };
 // CREATE ORDER
 export async function httpCreateOrder(req, res) {
-  const {} = req.body;
-  await Order.create();
-  return res.status(StatusCodes.CREATED).json(order);
+  const { userId } = req.user;
+  const { products } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Login to Order Product");
+
+  const ProductId = products.map((product) => product.productId);
+  const data = await Product.findById(ProductId);
+  if (!data) throw new notFoundError("Product not Found");
+
+  const tax = data.price * 0.05;
+  const shippingFee = data.price * 0.02;
+  const subtotal = data.price + tax;
+  const amount = subtotal + shippingFee;
+  const newOrder = await Order.create({
+    products,
+    tax,
+    shippingFee,
+    subtotal,
+    amount,
+  });
+  return res.status(StatusCodes.CREATED).json({
+    status: newOrder.status,
+    amount: newOrder.amount,
+    tax: newOrder.tax,
+    products: newOrder.products,
+    subtotal: newOrder.subtotal,
+    shippingFee: newOrder.shippingFee,
+    address: newOrder.address,
+  });
 }
 
 // UPDATE ORDER
@@ -54,7 +82,23 @@ export async function httpUpdateOrder(req, res) {
   );
   return res.status(204).json(updateOrder);
 }
+// UPDATE USER ADDRESS 
+export async function httpUpdateAddress(req, res) {
+  const { id: orderId } = req.params;
+  const { userId } = req.user;
+  const user = await User.findById(userId);
 
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
+  const order = req.body;
+  const updateOrder = await Order.findByIdAndUpdate(
+    orderId,
+    { $set: order },
+    { new: true }
+  );
+  return res.status(204).json(updateOrder);
+}
 // DELETE ORDER
 export async function httpDeleteOrder(req, res) {
   const { id: orderId } = req.params;
@@ -79,6 +123,11 @@ export async function httpDeleteOrder(req, res) {
 // GET A SPECIFIC ORDER
 export async function httpGetOrder(req, res) {
   const orderId = req.params.id;
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Login to add Product to cart");
+
   const order = await Order.findById({ userId: orderId });
   if (order.isAdmin === true) {
     return await res.status(200).json(order);
@@ -122,11 +171,3 @@ export async function httpGetIncome(req, res) {
   ]);
   return await res.status(StatusCodes.OK).json(data);
 }
-const calc = async (amount) => {
-  const { products } = req.body;
-
-  const ProductId = products.map((product) => product.productId);
-
-  const data = await Product.findById(productId);
-  if (!data) throw new notFoundError("Unable to find product");
-};

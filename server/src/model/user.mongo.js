@@ -38,6 +38,12 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    paymentInformation: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

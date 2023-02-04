@@ -170,7 +170,6 @@ export async function httpGetAllProducts(req, res) {
   const queryObject = {};
 
   if (color) queryObject.color = color;
-  console.log("nFilters: ", numericFilters);
   if (title) queryObject.title = { $regex: title, $options: "i" };
   if (numericFilters) {
     const operatorMap = {
@@ -192,10 +191,8 @@ export async function httpGetAllProducts(req, res) {
       if (options.includes(field)) {
         queryObject[field] = { [operator]: Number(value) };
       }
-      console.log("options: ", filters);
     });
   }
-  console.log("Query: ", queryObject);
   let result = Product.find(queryObject);
 
   // sort

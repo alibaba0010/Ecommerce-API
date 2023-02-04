@@ -5,7 +5,6 @@ import {
   httpDeleteProduct,
   httpGetProduct,
   httpGetAllProducts,
-  getAllProducts,
 } from "../controller/product.controller.js";
 
 import { authenticateUser, verifyAdmin } from "../middleware/auth.js";

@@ -165,13 +165,14 @@ export async function httpGetProduct(req, res) {
 
 // GET ALL PRODUCTS
 export async function httpGetAllProducts(req, res) {
-  const { title, color, categories, size, nFilters } = req.query; // price check in postman
+  const { title, color, categories, size, sort, fields, numericFilters } =
+    req.query; // price check in postman
   const queryObject = {};
 
   if (color) queryObject.color = color;
-
+  console.log("nFilters: ", numericFilters);
   if (title) queryObject.title = { $regex: title, $options: "i" };
-  if (nFilters) {
+  if (numericFilters) {
     const operatorMap = {
       ">": "$gt",
       ">=": "$gte",
@@ -180,25 +181,39 @@ export async function httpGetAllProducts(req, res) {
       "<=": "$lte",
     };
     const regEx = /\b(<|>|>=|=|<|<=)\b/g;
-    let filters = nFilters.replace(regEx, (match) => `-${operatorMap[match]}-`);
+    let filters = numericFilters.replace(
+      regEx,
+      (match) => `-${operatorMap[match]}-`
+    );
 
-    const options = ["price", "rating"];
-    console.log("options: ", options);
+    const options = ["price"]; //numericFilters
     filters = filters.split(",").forEach((item) => {
       const [field, operator, value] = item.split("-");
       if (options.includes(field)) {
         queryObject[field] = { [operator]: Number(value) };
       }
+      console.log("options: ", filters);
     });
   }
-  console.log(queryObject);
+  console.log("Query: ", queryObject);
   let result = Product.find(queryObject);
-  console.log("results: ", result);
 
+  // sort
+  if (sort) {
+    const sortList = sort.split(",").join(" ");
+    result = result.sort(sortList);
+  } else {
+    result = result.sort("createdAt");
+  }
+
+  //FIELDS
+  if (fields) {
+    const fieldsList = fields.split(",").join(" ");
+    result = result.select(fieldsList);
+  }
   const { skip, limit } = getPagination(req.query);
   result = result.skip(skip).limit(limit);
 
   const productQuery = await result;
-  console.log("ProductQuery: ", productQuery);
   return res.status(200).json({ productQuery, bits: productQuery.length });
 }

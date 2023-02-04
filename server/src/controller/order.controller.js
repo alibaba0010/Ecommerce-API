@@ -6,7 +6,7 @@ import UnAuthorizedError from "../errors/unauthorized.js";
 
 import Product from "../model/product.mongo.js";
 import Order from "../model/order.mongo.js";
-
+import User from "../model/user.mongo.js";
 import { getPagination } from "../services/query.js";
 
 // ADD Address and Payment Information
@@ -40,6 +40,12 @@ export async function httpCreateOrder(req, res) {
 // UPDATE ORDER
 export async function httpUpdateOrder(req, res) {
   const { id: orderId } = req.params;
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   const order = req.body;
   const updateOrder = await Order.findByIdAndUpdate(
     orderId,
@@ -51,7 +57,14 @@ export async function httpUpdateOrder(req, res) {
 
 // DELETE ORDER
 export async function httpDeleteOrder(req, res) {
-  const orderId = req.params.id;
+  const { id: orderId } = req.params;
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   await Order.findByIdAndDelete(orderId);
   if (!orderId) {
     return res.status(404).json({
@@ -77,6 +90,12 @@ export async function httpGetOrder(req, res) {
 
 // GET ALL ORDERS
 export async function httpGetAllOrders(req, res) {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   const { skip, limit } = getPagination(req.query);
   const orders = await Order.find({}, { _id: 0, __v: 0 })
     .sort({ id: 1 })
@@ -86,6 +105,13 @@ export async function httpGetAllOrders(req, res) {
 }
 // TO GET INCOME OF A PARTICULAR PERIOD
 export async function httpGetIncome(req, res) {
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Unable to get all carts");
+
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
   const previousMonth = new Date(lastMonth.setMonth(lastMonth.getMonth() - 1));

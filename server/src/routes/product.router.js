@@ -21,7 +21,8 @@ productRouter
     upload.single("image"),
     httpAddNewProduct
   )
-  .get(httpGetAllProducts); // getAllProducts
+  .get(httpGetAllProducts);
+
 productRouter
   .route("/:id")
   .patch(

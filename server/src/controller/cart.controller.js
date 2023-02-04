@@ -54,6 +54,11 @@ export async function httpDeleteCart(req, res) {
   const { id: cartId } = req.params;
   const { userId } = req.user;
 
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   const cart = await Cart.findById(cartId);
   if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
 
@@ -129,10 +134,9 @@ export const httpGetAllCarts = async (req, res) => {
   const { userId } = req.user;
 
   const user = await User.findById(userId);
-  console.log("user: ", user);
 
   if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Unable to get all carts");
+    throw new UnAuthorizedError("Only admin is ascessible");
 
   const carts = await Cart.find({}, { __v: 0 })
     .sort("createdAt")

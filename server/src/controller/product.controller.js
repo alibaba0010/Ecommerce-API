@@ -21,7 +21,9 @@ export async function httpAddNewProduct(req, res) {
   const { title, desc, categories, color, size, price, quantity } = req.body;
 
   const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get user");
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
 
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
@@ -68,7 +70,9 @@ export async function httpUpdateProduct(req, res) {
   const { title, desc, categories, color, size, price, quantity } = req.body;
 
   const user = await User.findById(userId);
-  if (!user) throw new notFoundError("User not Found");
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
 
   const findProduct = await Product.findById(productId);
   if (!findProduct) throw new notFoundError("Product not Found");
@@ -123,6 +127,12 @@ export async function httpUpdateProduct(req, res) {
 export async function httpDeleteProduct(req, res) {
   const { id: productId } = req.params;
   const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   const product = await Product.findById(productId);
   if (!product)
     throw new notFoundError(`Unable to get product with id ${productId}`);
@@ -155,18 +165,6 @@ export async function httpGetProduct(req, res) {
 
 // GET ALL PRODUCTS
 export async function httpGetAllProducts(req, res) {
-  const { skip, limit } = getPagination(req.query);
-  const products = await Product.find({}, {  __v: 0 })
-    .sort("createdAt")
-    .skip(skip)
-    .limit(limit);
-  if (!products) throw new notFoundError("Unable to get products");
-  return await res.status(StatusCodes.OK).json({
-    products,
-    request: { type: "GET", url: "http://localhost:2000/v1/products" },
-  });
-}
-export async function getAllProducts(req, res) {
   const { title, color, categories, size, nFilters } = req.query; // price check in postman
   const queryObject = {};
 
@@ -194,7 +192,7 @@ export async function getAllProducts(req, res) {
     });
   }
   console.log(queryObject);
-  let result =  Product.find(queryObject);
+  let result = Product.find(queryObject);
   console.log("results: ", result);
 
   const { skip, limit } = getPagination(req.query);

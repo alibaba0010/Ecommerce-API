@@ -11,6 +11,7 @@ import {
   logOutUser,
   forgotPassword,
   resetPassword,
+  httpGetUsersStats
 } from "../controller/user.controller.js";
 
 import {
@@ -31,8 +32,10 @@ userRouter
   //verify if user is admin before getting the user by the id params
   .get("/user/:id", authenticateUser, verifyAdmin, getUserByAdmin)
   .get("/user", authenticateUser, verifyUser, showCurrentUser)
+
+  .get("/users/stats", authenticateUser, verifyAdmin, httpGetUsersStats)
   .get("/users/logout", authenticateUser, verifyUser, logOutUser)
   .patch("/forgotpassword", forgotPassword)
-  .patch("/resetpassword/:restToken", resetPassword);
+  .patch("/resetpassword/:restToken", resetPassword)
 
 export default userRouter;

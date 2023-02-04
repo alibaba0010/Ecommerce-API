@@ -28,40 +28,22 @@ export const authenticateUser = async (req, res, next) => {
   }
 };
 
-// VERIFY USER WITH ID
-export function verifyUserWithId(req, res, next) {
-  if (req.params.id === req.user.userId) {
-    next();
-  } else {
-    throw new UnAuthorizedError("Access Denied!!!");
-  }
-}
-// VERIFY USERS WITHOUT ID
+// VERIFY USERS
 export async function verifyUser(req, res, next) {
-
   const user = await User.findById(req.user.userId).select("-password");
   if (user) {
     next();
   } else {
-    throw new UnAuthorizedError("Access Denied user");
+    throw new UnAuthorizedError("Please login to access");
   }
 }
 
-// VERIFY ADMIN WITH ID
-export function verifyAdminWithId(req, res, next) {
-  if (req.user.isAdmin === true || req.params.id === req.user.userId) {
-    next();
-  } else {
-    throw new UnAuthorizedError("Access Denied!!");
-  }
-}
-
-// VERIFY ADMIN WITHOUT ID
+// VERIFY ADMIN
 export async function verifyAdmin(req, res, next) {
   const user = await User.findById(req.user.userId).select("-password");
   if (user || user.isAdmin === true) {
     next();
   } else {
-    throw new UnAuthorizedError("Access Denied admin");
+    throw new UnAuthorizedError("Only admin is ascessible");
   }
 }

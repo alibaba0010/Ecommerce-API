@@ -1,6 +1,5 @@
 import { Router } from "express";
 
-import { verifyTokenAndAdmin } from "../services/auth.js";
 
 import {
   authenticateUser,

@@ -95,6 +95,13 @@ export async function updateUser(req, res) {
 
 // GET ALL USERS
 export async function getAllUserByAdmin(req, res) {
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   //check pagination later
   const { skip, limit } = getPagination(req.query);
   const users = await User.find({}, { __v: 0, password: 0 })
@@ -110,6 +117,13 @@ export async function getAllUserByAdmin(req, res) {
 // Get a user by admin
 export async function getUserByAdmin(req, res) {
   const { id } = req.params;
+  const { userId } = req.user;
+  
+  const admin = await User.findById(userId);
+
+  if (admin.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
   const user = await User.findById(id);
   if (!user) throw new notFoundError(`Unable to get User ${id}`);
   const { password, __v, ...others } = user._doc;
@@ -225,4 +239,32 @@ export const resetPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({
     msg: "Password Reset Successful, Please Login",
   });
+};
+
+export const httpGetUsersStats = async (req, res) => {
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (user.isAdmin !== true)
+    throw new UnAuthorizedError("Only admin is ascessible");
+
+  const date = new Date();
+  const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
+
+  const data = await User.aggregate([
+    { $match: { createdAt: { $gte: lastYear } } },
+    {
+      $project: {
+        month: { $month: "$createdAt" },
+      },
+    },
+    {
+      $group: {
+        _id: "$month",
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+  res.status(StatusCodes.OK).json(data);
 };

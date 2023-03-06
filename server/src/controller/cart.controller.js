@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import BadRequestError from "../errors/badRequest.js";
-import User from "../model/user.mongo.js";
+import User from "../model/user/user.mongo.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {

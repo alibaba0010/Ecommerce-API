@@ -5,7 +5,7 @@ import UnAuthorizedError from "../errors/unauthorized.js";
 
 import Product from "../model/product.mongo.js";
 import Order from "../model/order.mongo.js";
-import User from "../model/user.mongo.js";
+import User from "../model/user/user.mongo.js";
 import { getPagination } from "../services/query.js";
 
 // ADD Address and Payment Information
@@ -16,7 +16,7 @@ export const httpAddAddress = async (req, res) => {
   if (!user) throw new notFoundError("Login to Order Product");
   if (user.address || user.paymentInformation) {
     // return res.redirect("http://localhost:2000/v1/order/new");
-    return res.status(StatusCodes.OK).json({msg: "Address already exists"})
+    return res.status(StatusCodes.OK).json({ msg: "Address already exists" });
   } else {
     if (!address || !paymentInformation)
       throw new BadRequestError(
@@ -82,7 +82,7 @@ export async function httpUpdateOrder(req, res) {
   );
   return res.status(204).json(updateOrder);
 }
-// UPDATE USER ADDRESS 
+// UPDATE USER ADDRESS
 export async function httpUpdateAddress(req, res) {
   const { id: orderId } = req.params;
   const { userId } = req.user;

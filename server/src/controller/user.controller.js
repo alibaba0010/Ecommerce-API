@@ -1,6 +1,6 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
-import User from "../model/user.mongo.js";
+import User from "../model/user/user.mongo.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";

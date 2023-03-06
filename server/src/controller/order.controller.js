@@ -7,6 +7,7 @@ import Product from "../model/product.mongo.js";
 import Order from "../model/order.mongo.js";
 import User from "../model/user/user.mongo.js";
 import { getPagination } from "../services/query.js";
+import { checkAdmin } from "../model/user/user.model.js";
 
 // ADD Address and Payment Information
 export const httpAddAddress = async (req, res) => {
@@ -69,12 +70,9 @@ export async function httpCreateOrder(req, res) {
 export async function httpUpdateOrder(req, res) {
   const { id: orderId } = req.params;
   const { userId } = req.user;
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
-
   const order = req.body;
+
+  await checkAdmin(userId);
   const updateOrder = await Order.findByIdAndUpdate(
     orderId,
     { $set: order },
@@ -86,10 +84,8 @@ export async function httpUpdateOrder(req, res) {
 export async function httpUpdateAddress(req, res) {
   const { id: orderId } = req.params;
   const { userId } = req.user;
-  const user = await User.findById(userId);
 
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   const order = req.body;
   const updateOrder = await Order.findByIdAndUpdate(
@@ -104,10 +100,7 @@ export async function httpDeleteOrder(req, res) {
   const { id: orderId } = req.params;
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   await Order.findByIdAndDelete(orderId);
   if (!orderId) {
@@ -142,8 +135,7 @@ export async function httpGetAllOrders(req, res) {
   const { userId } = req.user;
   const user = await User.findById(userId);
 
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   const { skip, limit } = getPagination(req.query);
   const orders = await Order.find({}, { _id: 0, __v: 0 })
@@ -156,10 +148,7 @@ export async function httpGetAllOrders(req, res) {
 export async function httpGetIncome(req, res) {
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Unable to get all carts");
+  await checkAdmin(userId);
 
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));

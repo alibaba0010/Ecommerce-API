@@ -6,6 +6,13 @@ import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
 import { getPagination } from "../services/query.js";
 import { sendEmail } from "../services/Email.js";
+import {
+  checkAdmin,
+  checkEmailExists,
+  comparePassword,
+  findUser,
+  requiredFields,
+} from "../model/user/user.model.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,14 +22,11 @@ const redisClient = createClient({ url: process.env.REDIS_URI });
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
 
-  if (password !== confirmPassword)
-    throw new BadRequestError("Password doesn't match");
+  comparePassword(password, confirmPassword);
 
-  if (!username || !email || !password || !confirmPassword)
-    throw new BadRequestError("Please fill all required field");
+  requiredFields(username, email, password, confirmPassword);
 
-  const checkEmailExist = await User.findOne({ email });
-  if (checkEmailExist) throw new BadRequestError("Email already exists");
+  await checkEmailExists(email);
 
   const user = await User.create({ username, email, password });
   res
@@ -37,11 +41,9 @@ export async function httpAddNewAdmin(req, res) {
   admin.isAdmin = true;
   const { username, email, password, confirmPassword, isAdmin } = admin;
 
-  if (password !== confirmPassword)
-    throw new BadRequestError("Password doesn't match");
+  comparePassword(password, confirmPassword);
 
-  if (!username || !email || !password || !confirmPassword)
-    throw new BadRequestError("Please fill all required field");
+  requiredFields(username, email, password, confirmPassword);
 
   const user = await User.create({ username, email, password, isAdmin });
   res
@@ -59,9 +61,6 @@ export async function httpLogin(req, res) {
   const checkUsers = await User.findOne({ username });
 
   if (!checkUsers) throw new UnAuthenticatedError("Invalid Credentials");
-
-  const checkPassword = await checkUsers.comparePassword(password);
-  if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
 
   const token = await checkUsers.createJWT();
 
@@ -96,10 +95,7 @@ export async function updateUser(req, res) {
 export async function getAllUserByAdmin(req, res) {
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   //check pagination later
   const { skip, limit } = getPagination(req.query);
@@ -118,10 +114,7 @@ export async function getUserByAdmin(req, res) {
   const { id } = req.params;
   const { userId } = req.user;
 
-  const admin = await User.findById(userId);
-
-  if (admin.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   const user = await User.findById(id);
   if (!user) throw new notFoundError(`Unable to get User ${id}`);
@@ -149,12 +142,14 @@ export const showCurrentUser = async (req, res) => {
 export const updateUserPassword = async (req, res) => {
   const { userId } = req.user;
 
+  await findUser(userId);
+
+  const user = await User.findById(userId);
+
   const { password, newPassword } = req.body;
   if (!password || !newPassword) {
     throw new BadRequestError("Please provide required fields");
   }
-
-  const user = await User.findById(userId);
 
   const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) throw new UnAuthenticatedError("Invalid Credentials");
@@ -169,8 +164,7 @@ export const updateUserPassword = async (req, res) => {
 export const logOutUser = async (req, res) => {
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get user");
+  await findUser(userId);
 
   await redisClient.connect();
   const token = await redisClient.get(userId);
@@ -227,8 +221,8 @@ export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;
   const { password, confirmPassword } = req.body;
 
-  if (password !== confirmPassword)
-    throw new BadRequestError("Password doesn't match");
+  comparePassword(password, confirmPassword);
+
   // Hash token, then compare to Token in redis DB
   const hashedToken = createHash("sha256").update(resetToken).digest("hex");
 
@@ -247,10 +241,7 @@ export const resetPassword = async (req, res) => {
 export const httpGetUsersStats = async (req, res) => {
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   const date = new Date();
   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));

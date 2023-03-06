@@ -1,4 +1,4 @@
-import Cart from "../model/cart.mongo.js";
+import Cart from "../model/cart/cart.mongo.js";
 import notFoundError from "../errors/notFound.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import { StatusCodes } from "http-status-codes";
@@ -6,12 +6,14 @@ import Product from "../model/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import BadRequestError from "../errors/badRequest.js";
 import User from "../model/user/user.mongo.js";
+import { getUser } from "../model/cart/cart.model.js";
+import { checkAdmin, findUser } from "../model/user/user.model.js";
 
 // CREATE CART
 export async function httpCreateCart(req, res) {
   const { userId } = req.user;
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get user");
+
+  await findUser(userId);
 
   const { products } = req.body;
 
@@ -35,8 +37,7 @@ export async function httpUpdateCart(req, res) {
   const { productId } = products;
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get user");
+  await findUser(userId);
 
   const checkProduct = await Product.findById(productId);
 
@@ -60,17 +61,11 @@ export async function httpDeleteCart(req, res) {
   const { id: cartId } = req.params;
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
+  await checkAdmin(userId);
 
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await getUser(cartId);
 
   const cart = await Cart.findById(cartId);
-  if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
-
-  // Match product to its user
-  if (cart.user.toString() !== userId)
-    throw new UnAuthorizedError("Unauthorized User");
 
   // await Cart.findByIdAndDelete(cartId);
   await cart.remove();
@@ -96,9 +91,7 @@ export async function httpGetCart(req, res) {
     .limit(limit);
   if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
 
-  // Match product to its user
-  if (cart.user.toString() !== userId)
-    throw new UnAuthorizedError("Unauthorized User");
+  await getUser(cartId);
 
   return await res.status(StatusCodes.OK).json({
     cart,
@@ -114,14 +107,11 @@ export const httpGetSpecificProduct = async (req, res) => {
   const { cartId, productId } = req.params;
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to find user");
+  await findUser(userId);
+
+  await getUser(cartId);
 
   const cart = await Cart.findById(cartId);
-  if (!cart) throw new notFoundError(`Unable to get cart with id ${cartId}`);
-  // Match product to its user
-  if (cart.user.toString() !== userId)
-    throw new UnAuthorizedError("Unauthorized User");
 
   const ProductId = cart.products.map((product) => product.productId);
 
@@ -146,10 +136,7 @@ export const httpGetAllCarts = async (req, res) => {
   const { skip, limit } = getPagination(req.query);
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   const carts = await Cart.find({}, { __v: 0 })
     .sort("createdAt")

@@ -2,7 +2,7 @@ import Cart from "../model/cart/cart.mongo.js";
 import notFoundError from "../errors/notFound.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import { StatusCodes } from "http-status-codes";
-import Product from "../model/product.mongo.js";
+import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import BadRequestError from "../errors/badRequest.js";
 import User from "../model/user/user.mongo.js";

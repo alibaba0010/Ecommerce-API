@@ -1,12 +1,14 @@
 import { v2 as cloudinary } from "cloudinary";
 import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
-import Product from "../model/product.mongo.js";
+import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import User from "../model/user/user.mongo.js";
 import { fileSizeFormatter } from "../middleware/uploadImage.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
+import { checkAdmin } from "../model/user/user.model.js";
+import { addImage, productUser } from "../model/product/product.model.js";
 
 // Configuration
 export default cloudinary.config({
@@ -18,12 +20,11 @@ export default cloudinary.config({
 // CREATE PRODUCT
 export async function httpAddNewProduct(req, res) {
   const { userId } = req.user;
+  const { file } = req;
+
   const { title, desc, categories, color, size, price, quantity } = req.body;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
 
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
@@ -31,22 +32,10 @@ export async function httpAddNewProduct(req, res) {
   // Handle Imageupload
   let fileData = {};
 
-  if (req.file) {
-    // Save image to cloudinary
-    const uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Ecommerce API",
-      resource_type: "image",
-    });
-    fileData = {
-      id: uploadedFile.public_id,
-      fileName: req.file.originalname,
-      filePath: uploadedFile.secure_url,
-      fileType: req.file.mimetype,
-      fileSize: fileSizeFormatter(req.file.size, 2),
-    };
-  } else {
-    throw new BadRequestError("Please provide an image");
-  }
+  if (!file) throw new BadRequestError("Please provide an image");
+
+  await addImage(file);
+
   const product = await Product.create({
     user: userId,
     title,
@@ -68,39 +57,16 @@ export async function httpUpdateProduct(req, res) {
   const { userId } = req.user;
   const { id: productId } = req.params;
   const { title, desc, categories, color, size, price, quantity } = req.body;
+  const { file } = req;
+  await checkAdmin(userId);
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
-
-  const findProduct = await Product.findById(productId);
-  if (!findProduct) throw new notFoundError("Product not Found");
-
-  // Match product to its user
-  if (findProduct.user.toString() !== userId) {
-    throw new UnAuthorizedError("Unauthorized User");
-  }
+  await productUser(productId);
 
   // Handle Imageupload
   let fileData = {};
   let image;
-  // Save image to cloudinary
-  if (req.file) {
-    const uploadedFile = await cloudinary.uploader.upload(req.file.path, {
-      folder: "Ecommerce API",
-      resource_type: "image",
-    });
-    fileData = {
-      id: uploadedFile.public_id,
-      fileName: req.file.originalname,
-      filePath: uploadedFile.secure_url,
-      fileType: req.file.mimetype,
-      fileSize: fileSizeFormatter(req.file.size, 2),
-    };
-  } else {
-    image = findProduct.image;
-  }
+  if (!file) image = findProduct.image;
+
   const updatedProduct = {
     title,
     desc,
@@ -128,18 +94,10 @@ export async function httpDeleteProduct(req, res) {
   const { id: productId } = req.params;
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
-
-  if (user.isAdmin !== true)
-    throw new UnAuthorizedError("Only admin is ascessible");
+  await checkAdmin(userId);
+  await productUser(productId);
 
   const product = await Product.findById(productId);
-  if (!product)
-    throw new notFoundError(`Unable to get product with id ${productId}`);
-
-  // Match product to its user
-  if (product.user.toString() !== userId)
-    throw new UnAuthorizedError("Unauthorized User");
 
   await product.remove();
   return res.status(StatusCodes.OK).json({
@@ -170,6 +128,7 @@ export async function httpGetAllProducts(req, res) {
   const queryObject = {};
 
   if (color) queryObject.color = color;
+  if (size) queryObject.size = size;
   if (title) queryObject.title = { $regex: title, $options: "i" };
   if (numericFilters) {
     const operatorMap = {

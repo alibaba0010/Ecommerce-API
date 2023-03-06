@@ -1,64 +1,31 @@
-version: '3.9'
+## Quick Start
 
-services:
-main:
-build:
-context: .
-target: development
-ports: - ${PORT}:${PORT}
-volumes: - ./src:/usr/src/app/src - /app/node_modules
-env_file: - .env
-command: npm run start:dev
-depends_on: - mongo - redis
-mongo:
-image: mongo:5.0.2-focal
-volumes: - mongo-data:/data/db
-mongo-express:
-image: mongo-express:0.54.0
-ports: - 8081:8081
-depends_on: - mongo
-redis:
-image: redis:6.2.5-alpine
+Add a
+MONGO_URL
+EMAIL_USER
+JWT_SEC
+JWT_LIFETIME
+EMAIL_USER
+EMAIL_PASS
+EMAIL_HOST= .com
+CLIENT_URL
+CLOUD_NAME
+CLOUD_API_KEY
+CLOUD_API_SECRET
+GEOCODER_API_KEY
+GEOCODER_PROVIDER
+to the ".env" file.
 
-volumes:
-mongo-data:
+```bash
+# Install dependencies
+npm install
 
-johnsmilga 10hrs Build 4 projects
+# Serve on localhost:5000
+npm run dev (nodemon)
 
+# Routes
+GET    /api/v1/stores # Get Stores
 
-const { response } = require('express');
-var express = require('express');
-var mysql = require('mysql');
-const redis = require('redis');
-const client = redis.createClient();
+POST   /api/v1/stores # Add Store
 
-async function start() {
-
-    await client.connect();
-
-    function GetLatestPosts() {
-        return new Promise(async function(resolve, reject) {
-            const value = await client.get('indexitems');
-            if (value != null) {
-                resolve(JSON.parse(value));
-            }
-            else {
-                var PostsList;
-                mysqldb.getConnection(function (err, connection) {
-                    var sql = "CALL PRC_GetPostsList()";
-                    connection.query(sql, async function (err, data, fields) {
-                        if (err) throw err;
-                        PostsList = data[0];
-                        await client.set('indexitems', JSON.stringify(PostsList));
-                        await client.expire('indexitems', 86400);
-                        resolve(PostsList);  
-                    });
-                });
-            }
-        })
-    }
-}
-
-start()
-
-validate quantity not to be more than the quantity in product
+```

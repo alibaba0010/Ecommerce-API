@@ -3,7 +3,7 @@ import notFoundError from "../errors/notFound.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 
-import Product from "../model/product.mongo.js";
+import Product from "../model/product/product.mongo.js";
 import Order from "../model/order.mongo.js";
 import User from "../model/user/user.mongo.js";
 import { getPagination } from "../services/query.js";

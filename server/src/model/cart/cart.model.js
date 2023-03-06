@@ -1,4 +1,3 @@
-import BadRequestError from "../../errors/badRequest.js";
 import notFoundError from "../../errors/notFound.js";
 import UnAuthorizedError from "../../errors/unauthorized.js";
 

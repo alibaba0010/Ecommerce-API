@@ -53,6 +53,8 @@ const UserSchema = new Schema(
         type: [Number],
         index: "2dsphere",
       },
+      formattedAddress: String,
+    },
   },
   { timestamps: true }
 );

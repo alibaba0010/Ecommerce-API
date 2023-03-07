@@ -1,31 +1,34 @@
-## Quick Start
+## Getting Started
 
-Add a
-MONGO_URL
-EMAIL_USER
-JWT_SEC
-JWT_LIFETIME
-EMAIL_USER
-EMAIL_PASS
-EMAIL_HOST= .com
-CLIENT_URL
-CLOUD_NAME
-CLOUD_API_KEY
-CLOUD_API_SECRET
-GEOCODER_API_KEY
-GEOCODER_PROVIDER
-to the ".env" file.
+1. Ensure you have Node.js installed.
+2. Create a free [Mongo Atlas](https://www.mongodb.com/atlas/database) database online or start a local MongoDB database.
+3. Create a `server/.env` file with the properties specified in config.js file in services directory and add to the ".env" file.
 
-```bash
+```sh
+In the terminal,
+cd server
+
 # Install dependencies
 npm install
 
-# Serve on localhost:5000
+## Running the Project
+1. In the terminal, run:
+
 npm run dev (nodemon)
 
-# Routes
+## Routes
+
+#User Routes
+GET     /  # Get homepage
+
 GET    /api/v1/stores # Get Stores
 
 POST   /api/v1/stores # Add Store
+#Product Routes
+#Order Routes
+#Cart Routes
 
+## Docker
+1. Ensure you have the latest version of Docker with Docker-compose installed
+3. Run docker compose up --build
 ```

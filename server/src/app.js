@@ -1,8 +1,8 @@
 import express, { json } from "express";
 import "express-async-errors";
 
-
-
+import cors from "cors";
+import rateLimit from "express-rate-limit"
 import userRouter from "./routes/user.router.js";
 import orderRouter from "./routes/order.router.js";
 import productRouter from "./routes/product.router.js";
@@ -20,8 +20,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app
+  .use(cors())
   .use(json())
-  .get("/", (req,res) => res.send("Ecommerce-API Homepage"))
+  .get("/", (req, res) => res.send("Ecommerce-API Homepage"))
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)

@@ -2,7 +2,7 @@ import express, { json } from "express";
 import "express-async-errors";
 
 import cors from "cors";
-import rateLimit from "express-rate-limit"
+import rateLimit from "express-rate-limit";
 import userRouter from "./routes/user.router.js";
 import orderRouter from "./routes/order.router.js";
 import productRouter from "./routes/product.router.js";
@@ -19,11 +19,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-})
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 const app = express();
 app

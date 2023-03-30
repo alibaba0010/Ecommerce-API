@@ -32,3 +32,5 @@ POST   /api/v1/stores # Add Store
 1. Ensure you have the latest version of Docker with Docker-compose installed
 3. Run docker compose up --build
 ```
+
+Writing an api documentation

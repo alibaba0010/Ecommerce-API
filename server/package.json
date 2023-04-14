@@ -1,11 +1,11 @@
 {
-  "name": "e-commerce api",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon main",
+    "dev": "nodemon src/server.js",
     "watch": "node --watch main",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

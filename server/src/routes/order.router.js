@@ -15,8 +15,7 @@ import {
   httpGetOrder,
   httpGetAllOrders,
   httpGetIncome,
-  httpAddAddress,
-  httpUpdateAddress,
+
 } from "../controller/order.controller.js";
 
 orderRouter
@@ -30,5 +29,4 @@ orderRouter
   .delete(authenticateUser, verifyAdmin, httpDeleteOrder)
   .get(authenticateUser, verifyUser, httpGetOrder);
 orderRouter.get("/income", authenticateUser, verifyAdmin, httpGetIncome);
-orderRouter.post("/address", authenticateUser, verifyUser, httpAddAddress);
 export default orderRouter;

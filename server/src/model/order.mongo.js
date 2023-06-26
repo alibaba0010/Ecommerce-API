@@ -23,17 +23,10 @@ const OrderSchema = new Schema(
     subtotal: { type: Number },
     shippingFee: { type: Number },
     amount: { type: Number },
-    address: {
-      type: String,
-      // required: [true, "Please provide address information"],
-    },
     status: {
       type: String,
       enum: ["pending", "failed", "paid", "delivered", "canceled"],
       default: "pending",
-    },
-    paymentInformation: {
-      type: String,
     },
     // clientSecret: {
     //   type: String,

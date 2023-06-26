@@ -262,3 +262,44 @@ export const httpGetUsersStats = async (req, res) => {
   ]);
   res.status(StatusCodes.OK).json(data);
 };
+
+
+// ADD Address and Payment Information
+export const httpAddAddress = async (req, res) => {
+  const { address, paymentInformation } = req.body;
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+  if (!user) throw new notFoundError("Login to Order Product");
+  if (user.address || user.paymentInformation) {
+    return res.status(StatusCodes.OK).json({ msg: "Address already exists" });
+  } else {
+    if (!address || !paymentInformation)
+      throw new BadRequestError(
+        "Please provide address and payment Information"
+      );
+    await Address.create({ address });
+    // user.paymentInformation = paymentInformation;
+    await user.save();
+    await User.create({ address, paymentInformation });
+    return res
+      .status(StatusCodes.CREATED)
+      .json({ msg: "Address successfully added" });
+  }
+};
+
+// UPDATE USER ADDRESS
+export async function httpUpdateAddress(req, res) {
+  const { id: orderId } = req.params;
+  const { userId } = req.user;
+
+  await checkAdmin(userId);
+
+  const order = req.body;
+  const updateOrder = await User.findByIdAndUpdate(
+    orderId,
+    { $set: order },
+    { new: true }
+  );
+  return res.status(204).json(updateOrder);
+}

@@ -1,37 +1,13 @@
 import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
 import BadRequestError from "../errors/badRequest.js";
-import UnAuthorizedError from "../errors/unauthorized.js";
-
+import Address from "../model/user/address.mongo.js";
 import Product from "../model/product/product.mongo.js";
 import Order from "../model/order.mongo.js";
 import User from "../model/user/user.mongo.js";
 import { getPagination } from "../services/query.js";
 import { checkAdmin } from "../model/user/user.model.js";
 
-// ADD Address and Payment Information
-export const httpAddAddress = async (req, res) => {
-  const { address, paymentInformation } = req.body;
-  const { userId } = req.user;
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Login to Order Product");
-  if (user.address || user.paymentInformation) {
-    // return res.redirect("http://localhost:2000/v1/order/new");
-    return res.status(StatusCodes.OK).json({ msg: "Address already exists" });
-  } else {
-    if (!address || !paymentInformation)
-      throw new BadRequestError(
-        "Please provide address and payment Information"
-      );
-    user.address = address;
-    user.paymentInformation = paymentInformation;
-    await user.save();
-    await Order.create({ address, paymentInformation });
-    return res
-      .status(StatusCodes.CREATED)
-      .json({ msg: "Address successfully added" });
-  }
-};
 // CREATE ORDER
 export async function httpCreateOrder(req, res) {
   const { userId } = req.user;
@@ -80,21 +56,7 @@ export async function httpUpdateOrder(req, res) {
   );
   return res.status(204).json(updateOrder);
 }
-// UPDATE USER ADDRESS
-export async function httpUpdateAddress(req, res) {
-  const { id: orderId } = req.params;
-  const { userId } = req.user;
 
-  await checkAdmin(userId);
-
-  const order = req.body;
-  const updateOrder = await Order.findByIdAndUpdate(
-    orderId,
-    { $set: order },
-    { new: true }
-  );
-  return res.status(204).json(updateOrder);
-}
 // DELETE ORDER
 export async function httpDeleteOrder(req, res) {
   const { id: orderId } = req.params;

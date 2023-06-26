@@ -11,7 +11,9 @@ import {
   logOutUser,
   forgotPassword,
   resetPassword,
-  httpGetUsersStats
+  httpGetUsersStats,
+  httpAddAddress,
+  httpUpdateAddress,
 } from "../controller/user.controller.js";
 
 import {
@@ -37,5 +39,7 @@ userRouter
   .get("/users/logout", authenticateUser, verifyUser, logOutUser)
   .patch("/forgotpassword", forgotPassword)
   .patch("/resetpassword/:restToken", resetPassword)
+  .post("/user/address", authenticateUser, verifyUser, httpAddAddress)
+  .patch(authenticateUser, verifyUser, httpUpdateAddress);
 
 export default userRouter;

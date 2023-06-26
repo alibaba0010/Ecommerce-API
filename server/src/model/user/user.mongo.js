@@ -1,9 +1,10 @@
-import pkg from "mongoose";
+import pkg, { Types } from "mongoose";
 const { Schema, model } = pkg;
 import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "redis";
 import { randomBytes, createHash } from "crypto";
+import { geocoder } from "../../services/geocoder.js";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -42,11 +43,12 @@ const UserSchema = new Schema(
       type: String,
     },
     address: {
-      type: String,
+      type: [String],
+      ref: "Address",
     },
     location: {
       type: {
-        type: String,
+        type: [String],
         enum: ["Point"],
       },
       coordinates: {
@@ -91,13 +93,6 @@ UserSchema.methods.createPasswordToken = async function () {
   return hashedToken;
 };
 
-// compare password when login in
-UserSchema.methods.comparePassword = async function (userPassword) {
-  const passwordMatch = await bcrypt.compare(userPassword, this.password);
-
-  return passwordMatch;
-};
-
 // Geocode & create location
 UserSchema.pre("save", async function (next) {
   const loc = await geocoder.geocode(this.address);
@@ -111,5 +106,12 @@ UserSchema.pre("save", async function (next) {
   this.address = undefined;
   next();
 });
+
+// compare password when login in
+UserSchema.methods.comparePassword = async function (userPassword) {
+  const passwordMatch = await bcrypt.compare(userPassword, this.password);
+
+  return passwordMatch;
+};
 
 export default model("User", UserSchema);

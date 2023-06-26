@@ -1,7 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
 import BadRequestError from "../errors/badRequest.js";
-import Address from "../model/user/address.mongo.js";
 import Product from "../model/product/product.mongo.js";
 import Order from "../model/order.mongo.js";
 import User from "../model/user/user.mongo.js";

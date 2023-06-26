@@ -25,7 +25,6 @@ orderRouter
 orderRouter
   .route("/order/:id")
   .patch(authenticateUser, verifyAdmin, httpUpdateOrder)
-  .patch(authenticateUser, verifyUser, httpUpdateAddress)
   .delete(authenticateUser, verifyAdmin, httpDeleteOrder)
   .get(authenticateUser, verifyUser, httpGetOrder);
 orderRouter.get("/income", authenticateUser, verifyAdmin, httpGetIncome);

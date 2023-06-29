@@ -1,0 +1,26 @@
+.get button {
+  display: block;
+}
+body {
+  margin: 10px;
+}
+button {
+  display: inline-block;
+  border: none;
+  border-radius: 25px;
+  color: white;
+  padding: 20px;
+  background-color: blue;
+  font-size: 20px;
+  margin-bottom: 25px;
+  align-self: left;
+  width: 15%;
+}
+.others {
+  margin-top: 45px;
+  font-size: large;
+}
+.links {
+  font-size: 30px;
+  color: rgb(6, 9, 12);
+}

@@ -24,3 +24,22 @@ button {
   font-size: 30px;
   color: rgb(6, 9, 12);
 }
+@media only screen and (max-width: 600px) {
+  body {
+    display: flex;
+    background-color: lightblue;
+    justify-content: center;
+  }
+  button {
+    width: 30%;
+  }
+}
+@media only screen and (max-width: 768px) {
+  body {
+    display: flex;
+    justify-content: center;
+  }
+  button {
+    width: 25%;
+  }
+}

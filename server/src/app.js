@@ -30,14 +30,13 @@ app
   .use(cors())
   .use(json())
   .use(limiter)
-  .get("/", (req, res) => {
-    res.write(express.static(path.join(__dirname, "public", "index.html")));
-  })
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)
   .use("/v1/products", productRouter)
   .use("/v1", cartRouter)
+  .use("/", express.static("public"))
+
   .use(routeError)
   .use(errorHandler);
 

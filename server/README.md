@@ -19,18 +19,11 @@ npm run dev (nodemon)
 ## Routes
 
 #User Routes
-GET     /  # Get homepage
-
-GET    /api/v1/stores # Get Stores
-
-POST   /api/v1/stores # Add Store
-#Product Routes
-#Order Routes
-#Cart Routes
+GET     /  # Get homepage to get all the functionality of this ECOMMERCE-API
 
 ## Docker
 1. Ensure you have the latest version of Docker with Docker-compose installed
 3. Run docker compose up --build
 ```
 
-Writing an api documentation
+

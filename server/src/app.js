@@ -30,7 +30,7 @@ app
   .use(cors())
   .use(json())
   .use(limiter)
-  .use("/products", express.static(path.join(__dirname, "./uploads")))
+  .use("/products", express.static((__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)
   .use("/v1/products", productRouter)

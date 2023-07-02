@@ -282,8 +282,8 @@ export const httpAddAddress = async (req, res) => {
   };
   // Do not save address
   user.address = undefined;
-  await User.create({ loc, paymentInformation });
-
+  user.location = loc;
+  user.paymentInformation = paymentInformation;
   const add = await user.save();
   console.log("location: ", user);
   console.log("add: ", add);
@@ -311,7 +311,7 @@ export async function httpUpdateAddress(req, res) {
   };
   // Do not save address
   user.address = undefined;
-  await User.create(loc);
+  // await User.create(loc);
 
   const add = await user.save();
   const updateOrder = await User.findByIdAndUpdate(

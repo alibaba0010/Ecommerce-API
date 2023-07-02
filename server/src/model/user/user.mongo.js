@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "redis";
 import { randomBytes, createHash } from "crypto";
-import geocoder  from "../../services/geocoder.js";
+import geocoder from "../../services/geocoder.js";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -92,20 +92,6 @@ UserSchema.methods.createPasswordToken = async function () {
   await redisClient.disconnect();
   return hashedToken;
 };
-
-// Geocode & create location
-UserSchema.post("findOneAndUpdate", async function (next) {
-  const loc = await geocoder.geocode(this.address);
-  this.location = {
-    type: "Point",
-    coordinates: [loc[0].longitude, loc[0].latitude],
-    formattedAddress: loc[0].formattedAddress,
-  };
-
-  // Do not save address
-  this.address = undefined;
-  next();
-});
 
 // compare password when login in
 UserSchema.methods.comparePassword = async function (userPassword) {

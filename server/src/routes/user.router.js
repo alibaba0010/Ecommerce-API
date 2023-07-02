@@ -24,6 +24,9 @@ import {
 
 const userRouter = Router();
 userRouter
+  // @desc Register User
+  // @route POST /api/v1/users/register
+  // @access Public
   .post("/users/register", httpAddNewUser)
   .post("/admin/register", httpAddNewAdmin)
   .post("/users/login", httpLogin)
@@ -40,6 +43,6 @@ userRouter
   .patch("/forgotpassword", forgotPassword)
   .patch("/resetpassword/:restToken", resetPassword)
   .post("/user/address", authenticateUser, verifyUser, httpAddAddress)
-  .patch(authenticateUser, verifyUser, httpUpdateAddress);
+  .patch("/user/address", authenticateUser, verifyUser, httpUpdateAddress);
 
 export default userRouter;

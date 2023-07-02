@@ -6,6 +6,8 @@ import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import notFoundError from "../errors/notFound.js";
 import { getPagination } from "../services/query.js";
 import { sendEmail } from "../services/Email.js";
+import geocoder from "../services/geocoder.js";
+
 import {
   checkAdmin,
   checkEmailExists,
@@ -263,43 +265,60 @@ export const httpGetUsersStats = async (req, res) => {
   res.status(StatusCodes.OK).json(data);
 };
 
-
 // ADD Address and Payment Information
 export const httpAddAddress = async (req, res) => {
   const { address, paymentInformation } = req.body;
   const { userId } = req.user;
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new notFoundError("Login to Add Address");
+  if (!address || !paymentInformation)
+    throw new BadRequestError("Please provide address and payment Information");
 
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Login to Order Product");
-  if (user.address || user.paymentInformation) {
-    return res.status(StatusCodes.OK).json({ msg: "Address already exists" });
-  } else {
-    if (!address || !paymentInformation)
-      throw new BadRequestError(
-        "Please provide address and payment Information"
-      );
-    await Address.create({ address });
-    // user.paymentInformation = paymentInformation;
-    await user.save();
-    await User.create({ address, paymentInformation });
-    return res
-      .status(StatusCodes.CREATED)
-      .json({ msg: "Address successfully added" });
-  }
+  const loc = await geocoder.geocode(address);
+  user.location = {
+    type: "Point",
+    coordinates: [loc[0].longitude, loc[0].latitude],
+    formattedAddress: loc[0].formattedAddress,
+  };
+  // Do not save address
+  user.address = undefined;
+  await User.create({ loc, paymentInformation });
+
+  const add = await user.save();
+  console.log("location: ", user);
+  console.log("add: ", add);
+
+  return res
+    .status(StatusCodes.CREATED)
+    .json({ msg: "Address successfully added" });
+  // }
 };
 
 // UPDATE USER ADDRESS
 export async function httpUpdateAddress(req, res) {
-  const { id: orderId } = req.params;
+  const { address } = req.body;
   const { userId } = req.user;
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new notFoundError("Login to Add Address");
 
-  await checkAdmin(userId);
+  if (!address)
+    throw new BadRequestError("Please provide address and payment Information");
+  const loc = await geocoder.geocode(address);
+  user.location = {
+    type: "Point",
+    coordinates: [loc[0].longitude, loc[0].latitude],
+    formattedAddress: loc[0].formattedAddress,
+  };
+  // Do not save address
+  user.address = undefined;
+  await User.create(loc);
 
-  const order = req.body;
+  const add = await user.save();
   const updateOrder = await User.findByIdAndUpdate(
-    orderId,
-    { $set: order },
+    { id: userId },
+    { $set: address },
     { new: true }
   );
-  return res.status(204).json(updateOrder);
+  console.log("updatedAddress: ", updateOrder);
+  return res.status(204).json("Address added successfully");
 }

@@ -44,7 +44,7 @@ const UserSchema = new Schema(
     },
     address: {
       type: [String],
-      ref: "Address",
+      // ref: "Address",
     },
     location: {
       type: {
@@ -94,7 +94,7 @@ UserSchema.methods.createPasswordToken = async function () {
 };
 
 // Geocode & create location
-UserSchema.pre("save", async function (next) {
+UserSchema.post("findOneAndUpdate", async function (next) {
   const loc = await geocoder.geocode(this.address);
   this.location = {
     type: "Point",

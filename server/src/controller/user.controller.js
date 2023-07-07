@@ -318,5 +318,5 @@ export async function httpUpdateAddress(req, res) {
   console.log("updatedAddress: ", updateOrder);
   await user.save();
   console.log("user: ", user);
-  return res.status(204).json({ msg: "Address added successfully" });
+  res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
 }

@@ -275,18 +275,18 @@ export const httpAddAddress = async (req, res) => {
     throw new BadRequestError("Please provide address and payment Information");
 
   const loc = await geocoder.geocode(address);
-  user.location = {
+  console.log("addresses: ", user.addresses.location);
+  user.addresses.location = {
     type: "Point",
     coordinates: [loc[0].longitude, loc[0].latitude],
     formattedAddress: loc[0].formattedAddress,
   };
   // Do not save address
+  console.log("addresses: ", user.addresses.location);
   user.address = undefined;
-  user.location = loc;
+  user.addresses.location = loc;
   user.paymentInformation = paymentInformation;
-  const add = await user.save();
-  console.log("location: ", user);
-  console.log("add: ", add);
+  await user.save();
 
   return res
     .status(StatusCodes.CREATED)
@@ -300,25 +300,23 @@ export async function httpUpdateAddress(req, res) {
   const { userId } = req.user;
   const user = await User.findById(userId).select("-password");
   if (!user) throw new notFoundError("Login to Add Address");
-
-  if (!address)
-    throw new BadRequestError("Please provide address and payment Information");
+  if (!address) throw new BadRequestError("Please provide address");
   const loc = await geocoder.geocode(address);
-  user.location = {
+  const newAddress = {
     type: "Point",
     coordinates: [loc[0].longitude, loc[0].latitude],
     formattedAddress: loc[0].formattedAddress,
   };
+  console.log("new Address: ", newAddress);
+  user.addresses.push(newAddress);
+  console.log("addresses: ", user.addresses.location);
+
   // Do not save address
   user.address = undefined;
-  // await User.create(loc);
-
-  const add = await user.save();
-  const updateOrder = await User.findByIdAndUpdate(
-    { id: userId },
-    { $set: address },
-    { new: true }
-  );
+  const newAdd = user.addresses;
+  const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
   console.log("updatedAddress: ", updateOrder);
-  return res.status(204).json("Address added successfully");
+  await user.save();
+  console.log("user: ", user);
+  return res.status(204).json({ msg: "Address added successfully" });
 }

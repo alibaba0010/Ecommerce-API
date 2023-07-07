@@ -44,19 +44,22 @@ const UserSchema = new Schema(
     },
     address: {
       type: [String],
-      // ref: "Address",
     },
-    location: {
-      type: {
-        type: [String],
-        enum: ["Point"],
+    addresses: [
+      {
+        location: {
+          type: {
+            type: String,
+            enum: ["Point"],
+          },
+          coordinates: {
+            type: [Number],
+            index: "2dsphere",
+          },
+          formattedAddress: String,
+        },
       },
-      coordinates: {
-        type: [Number],
-        index: "2dsphere",
-      },
-      formattedAddress: String,
-    },
+    ],
   },
   { timestamps: true }
 );
@@ -99,5 +102,22 @@ UserSchema.methods.comparePassword = async function (userPassword) {
 
   return passwordMatch;
 };
+// // Geocode & create location
+// UserSchema.pre("findOneAndUpdate", async function (next) {
+//   if (this._update.location) {
+//     console.log("in here");
+//     const loc = await geocoder.geocode(this.address);
+//     this.location = {
+//       type: "Point",
+//       coordinates: [loc[0].longitude, loc[0].latitude],
+//       formattedAddress: loc[0].formattedAddress,
+//     };
+
+//     // Do not save address
+//     this.address = undefined;
+//     this._update.$push = { location: this._update.location };
+//   }
+//   next();
+// });
 
 export default model("User", UserSchema);

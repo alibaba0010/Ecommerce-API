@@ -275,16 +275,15 @@ export const httpAddAddress = async (req, res) => {
     throw new BadRequestError("Please provide address and payment Information");
 
   const loc = await geocoder.geocode(address);
-  console.log("addresses: ", user.addresses.location);
-  user.addresses.location = {
+  user.location = {
     type: "Point",
     coordinates: [loc[0].longitude, loc[0].latitude],
     formattedAddress: loc[0].formattedAddress,
   };
   // Do not save address
-  console.log("addresses: ", user.addresses.location);
   user.address = undefined;
-  user.addresses.location = loc;
+  // user.location = loc;
+  // console.log("LOC: ", loc);
   user.paymentInformation = paymentInformation;
   await user.save();
 
@@ -308,14 +307,14 @@ export async function httpUpdateAddress(req, res) {
     formattedAddress: loc[0].formattedAddress,
   };
   console.log("new Address: ", newAddress);
-  user.addresses.push(newAddress);
-  console.log("addresses: ", user.addresses.location);
+  user.location.push(newAddress);
+  console.log("newLocation: ", user.location);
 
   // Do not save address
   user.address = undefined;
-  const newAdd = user.addresses;
-  const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-  console.log("updatedAddress: ", updateOrder);
+  // const newAdd = user.addresses;
+  // const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
+  // console.log("updatedAddress: ", updateOrder);
   await user.save();
   console.log("user: ", user);
   res.status(StatusCodes.OK).json({ msg: "Address added successfully" });

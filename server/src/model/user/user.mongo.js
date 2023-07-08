@@ -45,22 +45,21 @@ const UserSchema = new Schema(
     address: {
       type: [String],
     },
-    addresses: [
+    location: [
       {
-        location: {
-          type: {
-            type: String,
-            enum: ["Point"],
-          },
-          coordinates: {
-            type: [Number],
-            index: "2dsphere",
-          },
-          formattedAddress: String,
+        type: {
+          type: String,
+          enum: ["Point"],
         },
+        coordinates: {
+          type: [Number],
+          index: "2dsphere",
+        },
+        formattedAddress: String,
       },
     ],
   },
+
   { timestamps: true }
 );
 

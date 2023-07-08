@@ -150,7 +150,7 @@ export const httpGetAllCarts = async (req, res) => {
 };
 
 //Cart Button
-// export const likePost = async (req, res) => {
+// export const likeProduct = async (req, res) => {
 //   const { id } = req.params;
 
 //   if (!req.userId) {
@@ -165,6 +165,28 @@ export const httpGetAllCarts = async (req, res) => {
 //   console.log("index: ", index);
 //   if (index === -1) {
 //     post.likes.push(req.userId);
+//   } else {
+//     post.likes = post.likes.filter((id) => id !== String(req.userId));
+//   }
+//   const updatedPost = await PostMessage.findByIdAndUpdate(id, post, {
+//     new: true,
+//   });
+//   res.status(200).json(updatedPost);
+// };
+
+
+//Cart Button
+// export const likeProduct = async (req, res) => {
+  // const { userId } = req.user;
+
+  // await findUser(userId);
+
+  //   console.log("stringed userid: ", String(req.userId));
+//   const index = post.likes.findIndex((id) => id === String(req.userId));
+
+//   console.log("index: ", index);
+//   if (index === -1) {
+//     cart.likes.push(req.userId);
 //   } else {
 //     post.likes = post.likes.filter((id) => id !== String(req.userId));
 //   }

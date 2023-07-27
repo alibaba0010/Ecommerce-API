@@ -1,5 +1,4 @@
 import BadRequestError from "../../errors/badRequest.js";
-import UnAuthenticatedError from "../../errors/unaunthenticated.js";
 import UnAuthorizedError from "../../errors/unauthorized.js";
 import notFoundError from "../../errors/notFound.js";
 import User from "./user.mongo.js";
@@ -16,11 +15,6 @@ export const requiredFields = (username, email, password, confirmPassword) => {
 export const checkEmailExists = async (email) => {
   const checkEmailExist = await User.findOne({ email });
   if (checkEmailExist) throw new BadRequestError("Email already exists");
-};
-
-export const checkPasswords = async (password) => {
-  const checkPassword = await checkUsers.comparePassword(password);
-  if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
 };
 
 export const checkAdmin = async (userId) => {

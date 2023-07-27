@@ -1,5 +1,4 @@
 version: "2.14.2"
-
 services:
   ecommerce-api:
     container_name: backend

@@ -1,15 +1,12 @@
-import asyncHandler from "express-async-handler";
 import BadRequestError from "../errors/badRequest.js";
-import { randomBytes, createHash } from "crypto";
 import { StatusCodes } from "http-status-codes";
-import User from "../models/User.js";
+import User from "../model/user/user.mongo.js";
 import notFoundError from "../errors/notFound.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import jwt from "jsonwebtoken";
-import Token from "../models/Token.js";
 import { sendEmail } from "../services/Email.js";
 
-export const registerUser = asyncHandler(async (req, res) => {
+export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
   if ((!name, !email, !password))
@@ -39,7 +36,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   } else {
     throw new BadRequestError("Invalid User data");
   }
-});
+};
 
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;

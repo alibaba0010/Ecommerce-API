@@ -1,13 +1,13 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
-import { getPagination } from "../services/query.js";
-import geocoder from "../services/geocoder.js";
 import User from "../model/user/user.mongo.js";
 import BadRequestError from "../errors/badRequest.js";
-import notFoundError from "../errors/notFound.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
+import notFoundError from "../errors/notFound.js";
+import { getPagination } from "../services/query.js";
 import { sendEmail } from "../services/Email.js";
+import geocoder from "../services/geocoder.js";
+
 import {
   checkAdmin,
   checkEmailExists,
@@ -19,7 +19,8 @@ import {
 import dotenv from "dotenv";
 dotenv.config();
 const redisClient = createClient({ url: process.env.REDIS_URI });
-
+ 
+// ADD NEW USER
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -34,9 +35,11 @@ export async function httpAddNewUser(req, res) {
     .status(StatusCodes.CREATED)
     .json({ username: user.username, email: user.email, id: user._id });
 }
+
 // FOR ADMIN
 export async function httpAddNewAdmin(req, res) {
   const admin = req.body;
+
   admin.isAdmin = true;
   const { username, email, password, confirmPassword, isAdmin } = admin;
 
@@ -53,8 +56,10 @@ export async function httpAddNewAdmin(req, res) {
 // LOGIN
 export async function httpLogin(req, res) {
   const { username, password } = req.body;
+
   if (!username || !password)
     throw new BadRequestError("Provide a username and password");
+
   const checkUsers = await User.findOne({ username });
 
   if (!checkUsers) throw new UnAuthenticatedError("Invalid Credentials");
@@ -80,6 +85,7 @@ export async function updateUser(req, res) {
 
   const updatedUser = await user.save();
 
+  if (!updatedUser) throw new notFoundError(`No user with id ${userId}`);
   const { email, id } = updatedUser;
 
   res
@@ -93,6 +99,7 @@ export async function getAllUserByAdmin(req, res) {
 
   await checkAdmin(userId);
 
+  //check pagination later
   const { skip, limit } = getPagination(req.query);
   const users = await User.find({}, { __v: 0, password: 0 })
     .sort("createdAt")
@@ -112,8 +119,8 @@ export async function getUserByAdmin(req, res) {
   await checkAdmin(userId);
 
   const user = await User.findById(id);
-  if (!user) throw new notFoundError(`Unable to get User ${userId}`);
-  const { password, _id, __v, ...others } = user._doc;
+  if (!user) throw new notFoundError(`Unable to get User ${id}`);
+  const { password, __v, ...others } = user._doc;
   res.status(StatusCodes.OK).json({
     others,
     request: {
@@ -122,7 +129,6 @@ export async function getUserByAdmin(req, res) {
     },
   });
 }
-
 // Hasn't been used
 export const showCurrentUser = async (req, res) => {
   const { userId } = req.user;
@@ -132,6 +138,106 @@ export const showCurrentUser = async (req, res) => {
   const { username, id, email, isAdmin } = user;
 
   return res.status(StatusCodes.OK).json({ username, id, email, isAdmin });
+};
+
+// Edit Password
+export const updateUserPassword = async (req, res) => {
+  const { userId } = req.user;
+
+  await findUser(userId);
+
+  const user = await User.findById(userId);
+
+  const { password, newPassword } = req.body;
+  if (!password || !newPassword) {
+    throw new BadRequestError("Please provide required fields");
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password);
+  if (!isPasswordCorrect) throw new UnAuthenticatedError("Invalid Credentials");
+
+  user.password = newPassword;
+
+  await user.save();
+  res.status(StatusCodes.OK).json({ msg: "Success! Password Updated." });
+};
+
+// LOGOUT USER
+export const logOutUser = async (req, res) => {
+  const { userId } = req.user;
+
+  await findUser(userId);
+
+  await redisClient.connect();
+  const token = await redisClient.get(userId);
+  const check = await redisClient.del(token);
+  await redisClient.disconnect();
+
+  return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
+};
+
+// FORGOT PASSWORD
+export async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new notFoundError("Email doesn't exist");
+
+  await redisClient.connect();
+
+  let resetToken = await user.createPasswordToken();
+  const getToken = await redisClient.get(user.id);
+  if (getToken) await redisClient.del(getToken);
+  await redisClient.disconnect();
+
+  const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
+
+  // Reset Email
+  const message = `
+ <h2>Hello ${user.name}</h2>
+ <p>Please use the url below to reset your password</p>  
+ <p>This reset link is valid for only 20minutes.</p>
+
+ <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+
+ <p>Regards...</p>
+ <p>AliBaba Team</p>
+`;
+
+  const subject = "Password Reset Request";
+  const sendTo = user.email;
+  const sentFrom = process.env.EMAIL_USER;
+  const replyTo = process.env.EMAIL_USER;
+  try {
+    await sendEmail(message, subject, sentFrom, sendTo, replyTo);
+    return res
+      .status(StatusCodes.OK)
+      .json({ msg: "Email sent", success: true });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error("Email not sent, please try again");
+  }
+}
+
+export const resetPassword = async (req, res) => {
+  const { resetToken } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  comparePassword(password, confirmPassword);
+
+  // Hash token, then compare to Token in redis DB
+  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+
+  const userToken = await redisClient.get(hashedToken);
+  if (!userToken) throw new notFoundError("Invalid or Expired Token");
+
+  // Find user
+  const user = await Token.findOne({ _id: userToken.userId });
+  user.password = password;
+  await user.save();
+  res.status(StatusCodes.OK).json({
+    msg: "Password Reset Successful, Please Login",
+  });
 };
 
 export const httpGetUsersStats = async (req, res) => {
@@ -159,146 +265,6 @@ export const httpGetUsersStats = async (req, res) => {
   res.status(StatusCodes.OK).json(data);
 };
 
-// LOGOUT USER
-export const logOutUser = async (req, res) => {
-  const { userId } = req.user;
-  await findUser(userId);
-
-  await redisClient.connect();
-  const token = await redisClient.get(userId);
-  const check = await redisClient.del(token);
-  await redisClient.disconnect();
-  res.cookie("token", "", {
-    path: "/",
-    httpOnly: true,
-    expires: new Date(0),
-    sameSite: "none",
-    secure: false,
-  });
-  return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
-};
-
-
-export const updateUser = async (req, res) => {
-  const { userId } = req.user;
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get User");
-
-  const { name, image, contact, bio } = req.body;
-  user.email = user.email;
-  user.name = name || user.name;
-  user.image = image || user.image;
-  user.contact = contact || user.contact;
-  user.bio = bio || user.bio;
-
-  const updatedUser = await user.save();
-  return res.status(StatusCodes.OK).json({
-    id: updatedUser.id,
-    name: updatedUser.name,
-    email: updatedUser.email,
-    image: updatedUser.image,
-    contact: updatedUser.contact,
-    bio: updatedUser.bio,
-  });
-};
-
-export const updateUserPassword = async (req, res) => {
-  const { userId } = req.user;
-
-  const { oldPassword, newPassword } = req.body;
-
-  if (!oldPassword && !newPassword)
-    throw new BadRequestError("Please fill all required field");
-
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get User");
-
-  const checkPassword = await user.comparePassword(oldPassword);
-  if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
-  user.password = newPassword;
-  await user.save();
-  res.status(StatusCodes.OK).json({ msg: "Password change successful" });
-};
-
-export const forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) throw new notFoundError("Email doesn't exist");
-
-  // // Delete token if it exists in DB
-  // const token = await Token.findOne({ userId: user._id });
-  // if (token) {
-  //   await token.deleteOne();
-  // }
-
-  // Create reset token
-  // let resetToken = await user.createPasswordToken();
-  let resetToken = randomBytes(32).toString("hex") + user.id;
-  // Hash token before saving to DB
-  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-  // Save Token to DB
-  await new Token({
-    userId: user.id,
-    token: hashedToken,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + 20 * (60 * 1000), // Twenty minutes
-  }).save();
-
-  const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
-
-  // Reset Email
-  const message = `
- <h2>Hello ${user.name}</h2>
- <p>Please use the url below to reset your password</p>  
- <p>This reset link is valid for only 20minutes.</p>
-
- <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
-
- <p>Regards...</p>
- <p>AliBaba Team</p>
-`;
-
-  const subject = "Password Reset Request";
-  const sendTo = user.email;
-  const sentFrom = process.env.EMAIL_USER;
-  const replyTo = process.env.EMAIL_USER;
-  try {
-    const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
-    return res
-      .status(StatusCodes.OK)
-      .json({ msg: "Resent sent", success: true });
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error("Email not sent, please try again");
-  }
-};
-
-export const resetPassword = async (req, res) => {
-  const { resetToken } = req.params;
-  const { password, confirmPassword } = req.body;
-
-  if (password !== confirmPassword)
-    throw new BadRequestError("Password doesn't match");
-  // Hash token, then compare to Token in DB
-  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-
-  // fIND tOKEN in DB
-  // const userToken = await Token.findOne({
-  //   token: hashedToken,
-  //   expiresAt: { $gt: Date.now() },
-  // });
-  // if (!userToken) throw new notFoundError("Invalid or Expired Token");
-
-  // Find user
-  // const user = await Token.findOne({ _id: userToken.userId });
-  user.password = password;
-  await user.save();
-  res.status(StatusCodes.OK).json({
-    msg: "Password Reset Successful, Please Login",
-  });
-};
-
-// UPDATE USER ADDRESS
 // ADD Address and Payment Information
 export const httpAddAddress = async (req, res) => {
   const { address, paymentInformation } = req.body;
@@ -316,68 +282,39 @@ export const httpAddAddress = async (req, res) => {
   };
   // Do not save address
   user.address = undefined;
-  await User.create({ loc, paymentInformation });
-
+  // user.location = loc;
+  // console.log("LOC: ", loc);
+  user.paymentInformation = paymentInformation;
   await user.save();
-
   return res
-    .status(StatusCodes.CREATED)
-    .json({ msg: "Address successfully added" });
-  // }
+  .status(StatusCodes.CREATED)
+  .json({ msg: "Address successfully added" });
+// }
 };
 
 // UPDATE USER ADDRESS
 export async function httpUpdateAddress(req, res) {
-  const { address } = req.body;
-  const { userId } = req.user;
-  const user = await User.findById(userId).select("-password");
-  if (!user) throw new notFoundError("Login to Add Address");
+const { address } = req.body;
+const { userId } = req.user;
+const user = await User.findById(userId).select("-password");
+if (!user) throw new notFoundError("Login to Add Address");
+if (!address) throw new BadRequestError("Please provide address");
+const loc = await geocoder.geocode(address);
+const newAddress = {
+  type: "Point",
+  coordinates: [loc[0].longitude, loc[0].latitude],
+  formattedAddress: loc[0].formattedAddress,
+};
+console.log("new Address: ", newAddress);
+user.location.push(newAddress);
+console.log("newLocation: ", user.location);
 
-  if (!address)
-    throw new BadRequestError("Please provide address and payment Information");
-  const loc = await geocoder.geocode(address);
-
-  const newAddress = {
-    type: "Point",
-    coordinates: [loc[0].longitude, loc[0].latitude],
-    formattedAddress: loc[0].formattedAddress,
-  };
-  user.addresses.push(newAddress);
-  console.log("addresses: ", user.addresses.location);
-
-  // Do not save address
-  user.address = undefined;
-  // user.location = loc;
-
-  user.paymentInformation = paymentInformation;
-
-  const newAdd = user.addresses;
-
-  const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-
-  await user.save();
-  return res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
+// Do not save address
+user.address = undefined;
+// const newAdd = user.addresses;
+// const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
+// console.log("updatedAddress: ", updateOrder);
+await user.save();
+console.log("user: ", user);
+res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
 }
-
-// formattedAddress: loc[0].formattedAddress,
-// };
-// console.log("new Address: ", newAddress);
-// user.location.push(newAddress);
-// console.log("newLocation: ", user.location);
-
-// // Do not save address
-// user.address = undefined;
-// // const newAdd = user.addresses;
-// // const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-// // console.log("updatedAddress: ", updateOrder);
-// await user.save();
-// console.log("user: ", user);
-// res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
-
-// throw new BadRequestError("Please provide address and payment Information");
-
-// // Do not save address
-// user.address = undefined;
-// // user.location = loc;
-// // console.log("LOC: ", loc);
-// user.paymentInformation = paymentInformation;

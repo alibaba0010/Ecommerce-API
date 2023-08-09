@@ -1,5 +1,5 @@
-import request from "supertest";
-import { app } from "../../app.js";
+import supertest from "supertest";
+import { app } from "../../app";
 
 // *******SIGNUP*****
 it("returns a 201 on successful signup", async () => {

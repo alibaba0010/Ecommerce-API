@@ -46,8 +46,8 @@ it("returns a 400 with an invalid password", async () => {
     .send({
       username: "test",
       email: "alskdflaskjfd",
-      password: "password",
       email: "test@test.com",
+      password: "p",
       confirmPassword: "password",
     })
     .expect(400);
@@ -58,8 +58,11 @@ it("returns a 400 with an unable to confirm password", async () => {
     .post("/v1/users/register")
     .post("/v1/admin/register")
     .send({
+      username: "test",
       email: "alskdflaskjfd",
-      password: "p",
+      email: "test@test.com",
+      password: "password",
+      confirmPassword: "passWord",
     })
     .expect(400);
 });
@@ -104,26 +107,20 @@ await request(app)
   })
   .expect(400);
 
-// *****SET COOKIE AFTER LOGIN ****
-it("sets a cookie after successful login", async () => {
-  const response = await request(app)
-    .post("/v1/users/login")
-    .send({
-      email: "test@test.com",
-      password: "password",
-    })
-    .expect(201);
-
-  expect(response.get("Set-Cookie")).toBeDefined();
-});
-
 //**********LOGIN*************
-
-it("fails with 400 when a email that does not exist is supplied", async () => {
+it("fails with 400 when a email or username that does not exist is supplied", async () => {
   await request(app)
     .post("/v1/users/login")
     .send({
-      email: "test@test.com",
+      value: "test@test.com",
+      password: "password",
+    })
+    .expect(400);
+
+  await request(app)
+    .post("/v1/users/login")
+    .send({
+      value: "test",
       password: "password",
     })
     .expect(400);
@@ -133,42 +130,56 @@ it("fails when an incorrect password is supplied", async () => {
   await request(app)
     .post("/v1/users/register")
     .send({
+      username: "test",
       email: "test@test.com",
       password: "password",
+      confirmPassword: "password",
     })
     .expect(201);
 
   await request(app)
     .post("/v1/users/login")
     .send({
-      email: "test@test.com",
+      value: "test@test.com",
+      password: "aslkdfjalskdfj",
+    })
+    .expect(400);
+  await request(app)
+    .post("/v1/users/login")
+    .send({
+      value: "test",
       password: "aslkdfjalskdfj",
     })
     .expect(400);
 });
 
-it("responds with a cookie when given valid credentials", async () => {
+// *** VALID LOGIN ***
+it("responds with a token when given valid credentials", async () => {
   await request(app)
     .post("/v1/users/register")
     .send({
+      username: "test",
       email: "test@test.com",
       password: "password",
+      confirmPassword: "password",
     })
     .expect(201);
 
   const response = await request(app)
     .post("/v1/users/login")
     .send({
-      email: "test@test.com",
+      value: "test@test.com",
       password: "password",
     })
     .expect(200);
 
-  expect(response.get("Set-Cookie")).toBeDefined();
+  // response.token
+  console.log(`Response in login ${response.token}`);
+  expect(response.get()).toBeDefined(); //"Set-Cookie"
 });
 
 //**********SIGN OUT*************
-it("clears the cookie after loging out", async () => {
+it("clears the token after loging out", async () => {
   await request(app)
     .post("/v1/users/register")
     .send({

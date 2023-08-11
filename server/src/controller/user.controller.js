@@ -52,12 +52,12 @@ export async function httpAddNewAdmin(req, res) {
 
 // LOGIN
 export async function httpLogin(req, res) {
-  const { username, password } = req.body;
-  if (!username || !password)
-    throw new BadRequestError("Provide a username and password");
-  const checkUsers = await User.findOne({ username });
-
-  if (!checkUsers) throw new UnAuthenticatedError("Invalid Credentials");
+  const { value, password } = req.body;
+  if (!value || !password)
+    throw new BadRequestError("Provide a username or email and password");
+  // const checkValue = await User.findOne({ username });
+  await checkValue(value);
+  if (!checkValue) throw new UnAuthenticatedError("Invalid Credentials");
 
   const token = await checkUsers.createJWT();
 
@@ -178,7 +178,6 @@ export const logOutUser = async (req, res) => {
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
 };
 
-
 export const updateUser = async (req, res) => {
   const { userId } = req.user;
   const user = await User.findById(userId);
@@ -236,7 +235,7 @@ export const forgotPassword = async (req, res) => {
   let resetToken = randomBytes(32).toString("hex") + user.id;
   // Hash token before saving to DB
   const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-  // Save Token to DB
+  // Save Token to Redis DB
   await new Token({
     userId: user.id,
     token: hashedToken,

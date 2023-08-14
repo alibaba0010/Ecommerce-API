@@ -178,28 +178,28 @@ export const logOutUser = async (req, res) => {
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
 };
 
-export const updateUser = async (req, res) => {
-  const { userId } = req.user;
-  const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get User");
+// export const updateUser = async (req, res) => {
+//   const { userId } = req.user;
+//   const user = await User.findById(userId);
+//   if (!user) throw new notFoundError("Unable to get User");
 
-  const { name, image, contact, bio } = req.body;
-  user.email = user.email;
-  user.name = name || user.name;
-  user.image = image || user.image;
-  user.contact = contact || user.contact;
-  user.bio = bio || user.bio;
+//   const { name, image, contact, bio } = req.body;
+//   user.email = user.email;
+//   user.name = name || user.name;
+//   user.image = image || user.image;
+//   user.contact = contact || user.contact;
+//   user.bio = bio || user.bio;
 
-  const updatedUser = await user.save();
-  return res.status(StatusCodes.OK).json({
-    id: updatedUser.id,
-    name: updatedUser.name,
-    email: updatedUser.email,
-    image: updatedUser.image,
-    contact: updatedUser.contact,
-    bio: updatedUser.bio,
-  });
-};
+//   const updatedUser = await user.save();
+//   return res.status(StatusCodes.OK).json({
+//     id: updatedUser.id,
+//     name: updatedUser.name,
+//     email: updatedUser.email,
+//     image: updatedUser.image,
+//     contact: updatedUser.contact,
+//     bio: updatedUser.bio,
+//   });
+// };
 
 export const updateUserPassword = async (req, res) => {
   const { userId } = req.user;

@@ -1,18 +1,20 @@
+import app from "../../app.js";
 import request from "supertest";
-import { app } from "../../app";
 
 // *******SIGN UP AS USERS OR ADMIN *****
 it("returns a 201 on successful register", async () => {
-  return request(app)
-    .post("/v1/users/register")
-    .post("/v1/admin/register")
-    .send({
-      username: "test",
-      email: "test@test.com",
-      password: "password",
-      confirmPassword: "password",
-    })
-    .expect(201);
+  return (
+    request(app)
+      .post("/v1/users/register")
+      // .post("/v1/admin/register")
+      .send({
+        username: "test",
+        email: "test@test.com",
+        password: "password",
+        confirmPassword: "password",
+      })
+      .expect(201)
+  );
 });
 
 it("returns a 400 with an invalid username", async () => {
@@ -96,16 +98,16 @@ it("returns a 400 with missing username, email, password or password", async () 
       confirmPassword: "alskjdf",
     })
     .expect(400);
+  await request(app)
+    .post("/v1/users/register")
+    .post("/v1/admin/register")
+    .send({
+      username: "test",
+      email: "test@test.com",
+      password: "alskjdf",
+    })
+    .expect(400);
 });
-await request(app)
-  .post("/v1/users/register")
-  .post("/v1/admin/register")
-  .send({
-    username: "test",
-    email: "test@test.com",
-    password: "alskjdf",
-  })
-  .expect(400);
 
 //**********LOGIN*************
 it("fails with 400 when a email or username that does not exist is supplied", async () => {

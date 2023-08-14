@@ -15,6 +15,11 @@
   "license": "ISC",
   "jest": {
     "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "mjs"
+    ],
     "transform": {}
   },
   "dependencies": {

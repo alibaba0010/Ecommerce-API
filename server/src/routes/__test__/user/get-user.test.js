@@ -1,4 +1,4 @@
-import app from "../../app.js";
+import app from "../../../app.js";
 import request from "supertest";
 it("returns a 400 with an invalid email", async () => {
   return request(app)

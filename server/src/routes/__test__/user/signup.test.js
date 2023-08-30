@@ -1,4 +1,4 @@
-import app from "../../app.js";
+import app from "../../../app.js";
 import request from "supertest";
 
 // *******SIGN UP AS USERS OR ADMIN *****

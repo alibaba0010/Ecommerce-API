@@ -21,7 +21,10 @@
       "mjs"
     ],
     "testTimeout": 10000,
-    "transform": {}
+    "transform": {},
+    "setupFilesAfterEnv": [
+      "./src/test/index.js"
+    ]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

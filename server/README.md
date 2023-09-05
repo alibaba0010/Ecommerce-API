@@ -27,3 +27,5 @@ npm run dev (nodemon)
 ```
 
 
+
+NODE_OPTIONS=--experimental-vm-modules npx run test

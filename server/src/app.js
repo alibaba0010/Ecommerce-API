@@ -40,7 +40,7 @@ app
   .use(routeError)
   .use(errorHandler);
 
-export default app;
+export default app ;
 
 //   cors({
 //     origin: ["http://localhost:3000", "https://pinvent-app.vercel.app"],

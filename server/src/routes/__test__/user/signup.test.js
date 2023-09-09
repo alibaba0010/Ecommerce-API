@@ -1,59 +1,75 @@
 import app from "../../../app.js";
 import request from "supertest";
 
-// *******SIGN UP AS USERS OR ADMIN *****
+// *******SIGN UP AS USERS *****
 it("returns a 201 on successful register", async () => {
+  return request(app)
+    .post("/v1/users/register")
+    .send({
+      username: "test",
+      email: "test@test.com",
+      password: "password",
+      confirmPassword: "password",
+    })
+    .expect(201);
+});
+
+// *******SIGN UP AS ADMIN *****
+it("returns a 201 on successful register", async () => {
+  return request(app)
+    .post("/v1/admin/register")
+    .send({
+      username: "test",
+      email: "test@test.com",
+      password: "password",
+      confirmPassword: "password",
+    })
+    .expect(201);
+});
+// // GET ERROR FOR INVLID PARAMS
+it("returns a 400 with an invalid username", async () => {
+  return (
+    request(app)
+      .post("/v1/users/register")
+      // .post("/v1/admin/register")
+      .send({
+        username: "", //put invlid name
+        email: "test@test.com",
+        password: "password",
+        confirmPassword: "password",
+      })
+      .expect(400)
+  );
+});
+it("returns a 400 with an invalid email", async () => {
   return (
     request(app)
       .post("/v1/users/register")
       // .post("/v1/admin/register")
       .send({
         username: "test",
-        email: "test@test.com",
+        email: "alskdflaskjfd",
         password: "password",
         confirmPassword: "password",
       })
-      .expect(201)
+      .expect(400)
   );
 });
-
-// it("returns a 400 with an invalid username", async () => {
-//   return request(app)
-//     .post("/v1/users/register")
-//     .post("/v1/admin/register")
-//     .send({
-//       username: "test", //put invlid name
-//       email: "test@test.com",
-//       password: "password",
-//       confirmPassword: "password",
-//     })
-//     .expect(400);
-// });
-// it("returns a 400 with an invalid email", async () => {
-//   return request(app)
-//     .post("/v1/users/register")
-//     .post("/v1/admin/register")
-//     .send({
-//       username: "test",
-//       email: "alskdflaskjfd",
-//       password: "password",
-//       confirmPassword: "password",
-//     })
-//     .expect(400);
-// });
-// it("returns a 400 with an invalid password", async () => {
-//   return request(app)
-//     .post("/v1/users/register")
-//     .post("/v1/admin/register")
-//     .send({
-//       username: "test",
-//       email: "alskdflaskjfd",
-//       email: "test@test.com",
-//       password: "p",
-//       confirmPassword: "password",
-//     })
-//     .expect(400);
-// });
+it("returns a 400 with an invalid password", async () => {
+  return (
+    request(app)
+      .post("/v1/users/register")
+      // .post("/v1/admin/register")
+      .send({
+        username: "test",
+        email: "alskdflaskjfd",
+        email: "test@test.com",
+        password: "p",
+        confirmPassword: "password",
+      })
+      .expect(400)
+  );
+});
 
 // it("returns a 400 with an unable to confirm password", async () => {
 //   return request(app)

@@ -8,7 +8,7 @@ export async function errorHandler(err, req, res, next) {
   };
 
   if (err.name === "ValidationError") {
-    console.log(Object.values(err.errors));
+    // console.log(Object.values(err.errors));
     customError.msg = Object.values(err.errors)
       .map((item) => item.message)
       .join(",");

@@ -29,4 +29,3 @@ npm run dev (nodemon)
 
 
 NODE_OPTIONS=--experimental-vm-modules npm run test
-Instance failed to start because a library is missing or cannot be opened: "libcrypto.so.1.1"

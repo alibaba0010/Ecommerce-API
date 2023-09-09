@@ -12,7 +12,7 @@ export async function errorHandler(err, req, res, next) {
     customError.msg = Object.values(err.errors)
       .map((item) => item.message)
       .join(",");
-    console.log(customError.msg);
+    // console.log(customError.msg);
     customError.statusCode = 400;
   }
   if (err.code && err.code === 11000) {

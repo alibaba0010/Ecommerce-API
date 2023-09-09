@@ -10,7 +10,7 @@ import UnAuthenticatedError from "../errors/unaunthenticated.js";
 import { sendEmail } from "../services/Email.js";
 import {
   checkAdmin,
-  checkEmailExists,
+  checkIfExists,
   comparePassword,
   findUser,
   requiredFields,
@@ -27,7 +27,7 @@ export async function httpAddNewUser(req, res) {
 
   requiredFields(username, email, password, confirmPassword);
 
-  await checkEmailExists(email);
+  await checkIfExists(email, username);
 
   const user = await User.create({ username, email, password });
   res
@@ -43,7 +43,7 @@ export async function httpAddNewAdmin(req, res) {
   comparePassword(password, confirmPassword);
 
   requiredFields(username, email, password, confirmPassword);
-
+  checkIfExists(email, username);
   const user = await User.create({ username, email, password, isAdmin });
   res
     .status(StatusCodes.CREATED)

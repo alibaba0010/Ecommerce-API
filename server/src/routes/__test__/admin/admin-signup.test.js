@@ -100,7 +100,7 @@ it("returns a 400 with missing username, email, password or password", async () 
 });
 
 // *******DUPLICATE EMAIL AND USERNAME ERROR *****
-it("returns a 201 on successful register", async () => {
+it("returns a 400 for registering with an exixting username", async () => {
   await request(app)
     .post("/v1/admin/register")
     .send({
@@ -120,7 +120,7 @@ it("returns a 201 on successful register", async () => {
     })
     .expect(400);
 });
-it("returns a 201 on successful register", async () => {
+it("returns a 400 for registering with an exixting email", async () => {
   await request(app)
     .post("/v1/admin/register")
     .send({

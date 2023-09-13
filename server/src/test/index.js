@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import request from "supertest";
-import  app  from "../app.js";
+import app from "../app.js";
 // import { Types, connect, connection } from "mongoose";
 import mongoose from "mongoose";
 // declare global {
@@ -32,19 +32,19 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-global.signin = async () => {
-  const email = "test@test.com";
-  const password = "password";
+// global.signin = async () => {
+//   const email = "test@test.com";
+//   const password = "password";
 
-  const response = await request(app)
-    .post("/v1/users/login")
-    .send({
-      email,
-      password,
-    })
-    .expect(201);
+//   const response = await request(app)
+//     .post("/v1/users/login")
+//     .send({
+//       email,
+//       password,
+//     })
+//     .expect(201);
 
-  const cookie = response.get("Set-Cookie");
+//   const cookie = response.get("Set-Cookie");
 
-  return cookie;
-};
+//   return cookie;
+// };

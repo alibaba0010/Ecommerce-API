@@ -6,18 +6,21 @@ import { createClient } from "redis";
 const redisClient = createClient();
 
 import User from "../model/user/user.mongo.js";
+import UnAuthenticatedError from "../errors/unaunthenticated.js";
 
 export const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
   let token;
-  if (req.params.id) {
-    await redisClient.connect();
-    token = await redisClient.get(req.params.id);
-    console.log("Uer Redis: ", token);
-    await redisClient.disconnect();
-  } else if (req.session.jwt) {
+  /*********Unable to use redis still */
+  // if (req.params.id) {
+  // await redisClient.connect();
+  // token = await redisClient.get(req.params.id);
+  // await redisClient.disconnect();
+  // }   else if (req.session.jwt) {
+  if (req.session.jwt) {
     token = req.session.jwt;
-  } else if (req.headers.authorization || authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
+  } else if (authHeader) {
+    if (authHeader.startsWith("Bearer ")) token = authHeader.split(" ")[1];
   } else {
     throw new UnauthenticatedError("Please login in to create a token");
   }

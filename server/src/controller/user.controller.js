@@ -44,7 +44,7 @@ export async function httpAddNewAdmin(req, res) {
   comparePassword(password, confirmPassword);
 
   requiredFields(username, email, password, confirmPassword);
-  checkIfExists(email, username);
+  await checkIfExists(email, username);
   const user = await User.create({ username, email, password, isAdmin });
   res
     .status(StatusCodes.CREATED)

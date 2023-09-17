@@ -206,7 +206,7 @@ export const updateUserPassword = async (req, res) => {
 
   const { oldPassword, newPassword } = req.body;
 
-  if (!oldPassword && !newPassword)
+  if (!oldPassword || !newPassword)
     throw new BadRequestError("Please fill all required field");
 
   const user = await User.findById(userId);

@@ -23,10 +23,9 @@ export const authenticateUser = async (req, res, next) => {
   }
   try {
     const decode = jwt.verify(token, process.env.JWT_SEC);
-    if (decode.exp < Date.now() / 1000) {
-      throw new UnauthenticatedError("Token has expired");
-    }
-    console.log("Decode: ", decode);
+    // if (decode.exp < Date.now() / 1000) {
+    //   throw new UnauthenticatedError("Token has expired");
+    // }
     req.user = { userId: decode.userId, isAdmin: decode.isAdmin };
 
     next();

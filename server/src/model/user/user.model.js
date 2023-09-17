@@ -16,7 +16,7 @@ export const checkIfExists = async (email, username) => {
   const checkEmailExist = await User.findOne({ email });
   const checkUsernameExist = await User.findOne({ username });
 
-  if (checkEmailExist && checkUsernameExist)
+  if (checkEmailExist || checkUsernameExist)
     throw new BadRequestError("Email or username already exists");
 };
 

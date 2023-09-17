@@ -14,7 +14,7 @@ import {
   comparePassword,
   findUser,
   requiredFields,
-  checkValue
+  checkValue,
 } from "../model/user/user.model.js";
 
 import dotenv from "dotenv";
@@ -57,15 +57,11 @@ export async function httpLogin(req, res) {
   const { value, password } = req.body;
   if (!value || !password)
     throw new BadRequestError("Provide a username or email and password");
-  // const checkValue = await User.findOne({ username });
-  await checkValue(value);
-  if (!checkValue) throw new UnAuthenticatedError("Invalid Credentials");
-
-  const token = await checkValue.createJWT();
-
-  res
-    .status(StatusCodes.OK)
-    .json({ id: checkUsers.id, username: checkUsers.username, token });
+  const user = await checkValue(value);
+  const comparePassword = await user.comparePassword(password);
+  if (!comparePassword) throw new UnAuthenticatedError("Invalid Password");
+  const token = await user.createJWT();
+  res.status(StatusCodes.OK).json({ id: user.id, username: user.username });
 }
 
 // UPDATE USER

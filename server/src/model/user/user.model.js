@@ -36,10 +36,9 @@ export const checkValue = async (value) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   let result;
   if (emailRegex.test(value)) {
-    result = await User.findOne({ value });
-    return email;
+    result = await User.findOne({ email: value });
   } else {
-    result = await User.findOne({ value });
+    result = await User.findOne({ username: value });
   }
   if (!result) throw new BadRequestError("Unable to find user");
   return result;

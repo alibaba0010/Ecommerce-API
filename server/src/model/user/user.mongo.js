@@ -10,7 +10,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const exp = process.env.JWT_LIFETIME;
-const redisClient = createClient({ url: process.env.REDIS_URI });
+// const redisClient = createClient({ url: process.env.REDIS_URI });
+const redisClient = createClient();
 
 const UserSchema = new Schema(
   {

@@ -34,14 +34,13 @@ export const findUser = async (userId) => {
 export const checkValue = async (value) => {
   // Regular expression to check if the value is an email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  let result;
   if (emailRegex.test(value)) {
-    // const email =
-    await User.findOne({ value });
+    result = await User.findOne({ value });
+    return email;
   } else {
-    // const username =
-    await User.findOne({ value });
+    result = await User.findOne({ value });
   }
-  // if (!email || username)
-  // throw new notFoundError("Please enter a valid email or username");
+  if (!result) throw new BadRequestError("Unable to find user");
+  return result;
 };

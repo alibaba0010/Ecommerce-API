@@ -14,11 +14,13 @@ import {
   comparePassword,
   findUser,
   requiredFields,
+  checkValue
 } from "../model/user/user.model.js";
 
 import dotenv from "dotenv";
 dotenv.config();
-const redisClient = createClient({ url: process.env.REDIS_URI });
+// const redisClient = createClient({ url: process.env.REDIS_URI });
+const redisClient = createClient();
 
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
@@ -59,7 +61,7 @@ export async function httpLogin(req, res) {
   await checkValue(value);
   if (!checkValue) throw new UnAuthenticatedError("Invalid Credentials");
 
-  const token = await checkUsers.createJWT();
+  const token = await checkValue.createJWT();
 
   res
     .status(StatusCodes.OK)

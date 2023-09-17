@@ -21,7 +21,6 @@ import dotenv from "dotenv";
 dotenv.config();
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
-
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -61,6 +60,9 @@ export async function httpLogin(req, res) {
   const comparePassword = await user.comparePassword(password);
   if (!comparePassword) throw new UnAuthenticatedError("Invalid Password");
   const token = await user.createJWT();
+  req.session = {
+    jwt: token,
+  };
   res.status(StatusCodes.OK).json({ id: user.id, username: user.username });
 }
 

@@ -5,28 +5,33 @@ import { createClient } from "redis";
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
 
-
 import User from "../model/user/user.mongo.js";
 
 export const authenticateUser = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  let token;
+  if (req.params.id) {
+    await redisClient.connect();
+    token = await redisClient.get(req.params.id);
+    console.log("Uer Redis: ", token);
+    await redisClient.disconnect();
+  } else if (req.session.jwt) {
+    token = req.session.jwt;
+  } else if (req.headers.authorization || authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  } else {
     throw new UnauthenticatedError("Please login in to create a token");
   }
-  const token = authHeader.split(" ")[1];
-  await redisClient.connect();
-  const userRedis = await redisClient.get(token);
-  await redisClient.disconnect();
-  // redisclient value would be id
   try {
     const decode = jwt.verify(token, process.env.JWT_SEC);
-
+    if (decode.exp < Date.now() / 1000) {
+      throw new UnauthenticatedError("Token has expired");
+    }
+    console.log("Decode: ", decode);
     req.user = { userId: decode.userId, isAdmin: decode.isAdmin };
 
     next();
   } catch (err) {
-    throw new UnauthenticatedError("Unable to authorize access");
+    throw new UnauthenticatedError("Unable to authorize access, login again");
   }
 };
 

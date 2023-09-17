@@ -1,6 +1,6 @@
 import express, { json } from "express";
 import "express-async-errors";
-
+import cookieSession from "cookie-session";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import userRouter from "./routes/user.router.js";
@@ -24,12 +24,18 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-
 const app = express();
 app
   .use(cors())
   .use(json())
   .use(limiter)
+  .use(
+    cookieSession({
+      signed: false,
+      secure: false, //process.env.NODE_ENV !== "test"
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+  ) // 24 hours
   .use("/products", express.static((__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)
@@ -40,7 +46,7 @@ app
   .use(routeError)
   .use(errorHandler);
 
-export default app ;
+export default app;
 
 //   cors({
 //     origin: ["http://localhost:3000", "https://pinvent-app.vercel.app"],

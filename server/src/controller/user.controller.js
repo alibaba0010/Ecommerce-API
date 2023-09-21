@@ -21,6 +21,8 @@ import dotenv from "dotenv";
 dotenv.config();
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
+
+// CREATE NEW USER
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -123,7 +125,7 @@ export async function getUserByAdmin(req, res) {
   });
 }
 
-// Hasn't been used
+// SHOW CURRENT USER
 export const showCurrentUser = async (req, res) => {
   const { userId } = req.user;
   const user = await User.findById(userId);
@@ -134,6 +136,7 @@ export const showCurrentUser = async (req, res) => {
   return res.status(StatusCodes.OK).json({ username, id, email, isAdmin });
 };
 
+/********NOT OPTIMIZED YET */
 export const httpGetUsersStats = async (req, res) => {
   const { userId } = req.user;
 
@@ -164,43 +167,15 @@ export const logOutUser = async (req, res) => {
   const { userId } = req.user;
   await findUser(userId);
 
-  await redisClient.connect();
-  const token = await redisClient.get(userId);
-  const check = await redisClient.del(token);
-  await redisClient.disconnect();
-  res.cookie("token", "", {
-    path: "/",
-    httpOnly: true,
-    expires: new Date(0),
-    sameSite: "none",
-    secure: false,
-  });
+  // await redisClient.connect();
+  // const token = await redisClient.get(userId);
+  // const check = await redisClient.del(token);
+  // await redisClient.disconnect();
+  req.session = null;
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
 };
 
-// export const updateUser = async (req, res) => {
-//   const { userId } = req.user;
-//   const user = await User.findById(userId);
-//   if (!user) throw new notFoundError("Unable to get User");
-
-//   const { name, image, contact, bio } = req.body;
-//   user.email = user.email;
-//   user.name = name || user.name;
-//   user.image = image || user.image;
-//   user.contact = contact || user.contact;
-//   user.bio = bio || user.bio;
-
-//   const updatedUser = await user.save();
-//   return res.status(StatusCodes.OK).json({
-//     id: updatedUser.id,
-//     name: updatedUser.name,
-//     email: updatedUser.email,
-//     image: updatedUser.image,
-//     contact: updatedUser.contact,
-//     bio: updatedUser.bio,
-//   });
-// };
-
+// USER UPDATING THEIR PASSWORD
 export const updateUserPassword = async (req, res) => {
   const { userId } = req.user;
 
@@ -210,7 +185,7 @@ export const updateUserPassword = async (req, res) => {
     throw new BadRequestError("Please fill all required field");
 
   const user = await User.findById(userId);
-  if (!user) throw new notFoundError("Unable to get User");
+  if (!user) throw new notFoundError("User not Found");
 
   const checkPassword = await user.comparePassword(oldPassword);
   if (!checkPassword) throw new UnAuthenticatedError("Invalid Password");
@@ -219,6 +194,7 @@ export const updateUserPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Password change successful" });
 };
 
+// FORGOT PASSWORD FUNCTIONALITY
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -272,6 +248,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+// RESET PASSWORD FUNCTIONALITY
 export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;
   const { password, confirmPassword } = req.body;
@@ -380,3 +357,27 @@ export async function httpUpdateAddress(req, res) {
 // // user.location = loc;
 // // console.log("LOC: ", loc);
 // user.paymentInformation = paymentInformation;
+
+/*******ADDING OTHER PROPERTIES FOR A USER */
+// export const updateUser = async (req, res) => {
+//   const { userId } = req.user;
+//   const user = await User.findById(userId);
+//   if (!user) throw new notFoundError("Unable to get User");
+
+//   const { name, image, contact, bio } = req.body;
+//   user.email = user.email;
+//   user.name = name || user.name;
+//   user.image = image || user.image;
+//   user.contact = contact || user.contact;
+//   user.bio = bio || user.bio;
+
+//   const updatedUser = await user.save();
+//   return res.status(StatusCodes.OK).json({
+//     id: updatedUser.id,
+//     name: updatedUser.name,
+//     email: updatedUser.email,
+//     image: updatedUser.image,
+//     contact: updatedUser.contact,
+//     bio: updatedUser.bio,
+//   });
+// };

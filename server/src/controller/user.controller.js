@@ -200,35 +200,25 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
-
+  console.log("User Id: ", user.id);
   // // Delete token if it exists in DB
   await redisClient.connect();
 
   // token = await redisClient.get(req.params.id);
 
-  // const token = await redisClient.get({ id: user.id });
-  // console.log("Token: ", token);
-  // if (token) {
-  //   await token.getDel({ id });
-  // }
+  const token = await redisClient.get(user.id);
+  console.log("Token: ", token);
+  if (token) {
+    await token.getDel(id);
+    console.log("Token Now: ", token);
+  }
 
   // Create reset token
   let resetToken = await user.createPasswordToken();
   console.log("Resrt Token: ", resetToken);
-  // let resetToken = randomBytes(32).toString("hex") + user.id;
-  // Hash token before saving to DB
-  // const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-  // Save Token to Redis DB
-  // await new Token({
-  //   userId: user.id,
-  //   token: hashedToken,
-  //   createdAt: Date.now(),
-  //   expiresAt: Date.now() + 20 * (60 * 1000), // Twenty minutes
-  // }).save();
 
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
-
-  await redisClient.disconnect();
+  console.log("Reset Url: ", resetUrl);
   // Reset Email
   const message = `
   <h2>Hello ${user.name}</h2>
@@ -245,6 +235,7 @@ export const forgotPassword = async (req, res) => {
   const sendTo = user.email;
   const sentFrom = process.env.EMAIL_USER;
   const replyTo = process.env.EMAIL_USER;
+  await redisClient.disconnect();
   try {
     const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
     return res

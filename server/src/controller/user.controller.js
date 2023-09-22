@@ -16,6 +16,7 @@ import {
   requiredFields,
   checkValue,
 } from "../model/user/user.model.js";
+const { randomBytes, createHash } = await import("node:crypto");
 
 import dotenv from "dotenv";
 dotenv.config();

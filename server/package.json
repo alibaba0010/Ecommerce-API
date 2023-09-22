@@ -6,7 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "watch": "node --watch main",
+    "watch": "node src/server.js",
     "test": "jest --watchAll --no-cache --detectOpenHandles",
     "test:ci": "jest"
   },

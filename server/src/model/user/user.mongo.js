@@ -3,8 +3,8 @@ const { Schema, model } = pkg;
 import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "redis";
-import { randomBytes, createHash } from "crypto";
 import geocoder from "../../services/geocoder.js";
+const { randomBytes, createHash } = await import("node:crypto");
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";

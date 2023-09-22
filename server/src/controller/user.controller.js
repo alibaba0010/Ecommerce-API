@@ -202,32 +202,39 @@ export const forgotPassword = async (req, res) => {
   if (!user) throw new notFoundError("Email doesn't exist");
 
   // // Delete token if it exists in DB
-  // const token = await Token.findOne({ userId: user._id });
+  await redisClient.connect();
+
+  // token = await redisClient.get(req.params.id);
+
+  // const token = await redisClient.get({ id: user.id });
+  // console.log("Token: ", token);
   // if (token) {
-  //   await token.deleteOne();
+  //   await token.getDel({ id });
   // }
 
   // Create reset token
-  // let resetToken = await user.createPasswordToken();
-  let resetToken = randomBytes(32).toString("hex") + user.id;
+  let resetToken = await user.createPasswordToken();
+  console.log("Resrt Token: ", resetToken);
+  // let resetToken = randomBytes(32).toString("hex") + user.id;
   // Hash token before saving to DB
-  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+  // const hashedToken = createHash("sha256").update(resetToken).digest("hex");
   // Save Token to Redis DB
-  await new Token({
-    userId: user.id,
-    token: hashedToken,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + 20 * (60 * 1000), // Twenty minutes
-  }).save();
+  // await new Token({
+  //   userId: user.id,
+  //   token: hashedToken,
+  //   createdAt: Date.now(),
+  //   expiresAt: Date.now() + 20 * (60 * 1000), // Twenty minutes
+  // }).save();
 
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
 
+  await redisClient.disconnect();
   // Reset Email
   const message = `
- <h2>Hello ${user.name}</h2>
- <p>Please use the url below to reset your password</p>  
- <p>This reset link is valid for only 20minutes.</p>
-
+  <h2>Hello ${user.name}</h2>
+  <p>Please use the url below to reset your password</p>  
+  <p>This reset link is valid for only 20minutes.</p>
+  
  <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
 
  <p>Regards...</p>

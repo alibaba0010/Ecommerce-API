@@ -195,15 +195,11 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
-  console.log("User Id: ", user.id);
-  // // Delete token if it exists in DB
-  await redisClient.connect();
+  // await redisClient.connect();
 
   // Create reset token
   let resetToken = await user.createPasswordToken();
-  console.log("Resrt Token: ", resetToken);
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
-  console.log("Reset Url: ", resetUrl);
   // Reset Email
   const message = `
   <h2>Hello ${user.name}</h2>

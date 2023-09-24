@@ -93,7 +93,7 @@ UserSchema.methods.createPasswordToken = async function () {
   await redisClient.setEx(this.id, exp, hashedToken);
   const checkToken = await redisClient.get(this.id);
   console.log("check Token:  ", checkToken);
-  await redisClient.disconnect();
+  // await redisClient.disconnect();
   return hashedToken;
 };
 

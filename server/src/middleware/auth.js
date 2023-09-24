@@ -2,8 +2,6 @@ import jwt from "jsonwebtoken";
 import UnauthenticatedError from "../errors/unaunthenticated.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import { createClient } from "redis";
-// const redisClient = createClient({ url: process.env.REDIS_URI });
-const redisClient = createClient();
 
 import User from "../model/user/user.mongo.js";
 import UnAuthenticatedError from "../errors/unaunthenticated.js";
@@ -11,12 +9,7 @@ import UnAuthenticatedError from "../errors/unaunthenticated.js";
 export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   let token;
-  /*********Unable to use redis still */
-  // if (req.params.id) {
-  // await redisClient.connect();
-  // token = await redisClient.get(req.params.id);
-  // await redisClient.disconnect();
-  // }   else if (req.session.jwt) {
+
   if (req.session.jwt) {
     token = req.session.jwt;
   } else if (authHeader) {

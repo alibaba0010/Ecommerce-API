@@ -168,11 +168,6 @@ export const logOutUser = async (req, res) => {
   const { userId } = req.user;
   await findUser(userId);
 
-  // await redisClient.connect();
-  // const token = await redisClient.get(userId);
-  // const check = await redisClient.del(token);
-  // await redisClient.disconnect();
-  req.session = null;
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
 };
 
@@ -204,19 +199,9 @@ export const forgotPassword = async (req, res) => {
   // // Delete token if it exists in DB
   await redisClient.connect();
 
-  // token = await redisClient.get(req.params.id);
-
-  const token = await redisClient.get(user.id);
-  console.log("Token: ", token);
-  if (token) {
-    await token.getDel(id);
-    console.log("Token Now: ", token);
-  }
-
   // Create reset token
   let resetToken = await user.createPasswordToken();
   console.log("Resrt Token: ", resetToken);
-
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
   console.log("Reset Url: ", resetUrl);
   // Reset Email
@@ -235,7 +220,7 @@ export const forgotPassword = async (req, res) => {
   const sendTo = user.email;
   const sentFrom = process.env.EMAIL_USER;
   const replyTo = process.env.EMAIL_USER;
-  await redisClient.disconnect();
+  // await redisClient.disconnect();
   try {
     const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
     return res

@@ -80,9 +80,7 @@ UserSchema.methods.createJWT = async function () {
       expiresIn: exp,
     }
   );
-  await redisClient.connect();
-  const redis = await redisClient.setEx(this.id, exp, signInToken);
-  await redisClient.disconnect();
+  // const redis = await redisClient.setEx(this.id, exp, signInToken);
   return signInToken;
 };
 

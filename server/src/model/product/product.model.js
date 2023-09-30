@@ -1,5 +1,6 @@
 import Product from "./product.mongo.js";
 import UnAuthorizedError from "../../errors/unauthorized.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const productUser = async (productId) => {
   const findProduct = await Product.findById(productId);
@@ -11,7 +12,11 @@ export const productUser = async (productId) => {
   }
 };
 
+import { fileSizeFormatter } from "../../middleware/uploadImage.js";
+
 export const addImage = async (file) => {
+  // Handle Imageupload
+  let fileData = {};
   if (file) {
     // Save image to cloudinary
     const uploadedFile = await cloudinary.uploader.upload(file.path, {
@@ -25,5 +30,6 @@ export const addImage = async (file) => {
       fileType: file.mimetype,
       fileSize: fileSizeFormatter(file.size, 2),
     };
+    return fileData;
   }
 };

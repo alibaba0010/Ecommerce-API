@@ -4,7 +4,6 @@ import notFoundError from "../errors/notFound.js";
 import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
 import User from "../model/user/user.mongo.js";
-import { fileSizeFormatter } from "../middleware/uploadImage.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import { checkAdmin } from "../model/user/user.model.js";
@@ -29,13 +28,9 @@ export async function httpAddNewProduct(req, res) {
   if (!title || !desc || !size || !price)
     throw new BadRequestError("Please fill all required field");
 
-  // Handle Imageupload
-  let fileData = {};
-
   if (!file) throw new BadRequestError("Please provide an image");
 
-  await addImage(file);
-
+  const fileData = await addImage(file);
   const product = await Product.create({
     user: userId,
     title,

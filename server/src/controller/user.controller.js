@@ -192,10 +192,13 @@ export const updateUserPassword = async (req, res) => {
 
 // FORGOT PASSWORD FUNCTIONALITY
 export const forgotPassword = async (req, res) => {
+  await redisClient.connect();
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
 
+  const checkToken = await redisClient.get(user.id);
+  console.log("check token in db: ", checkToken);
   // Create reset token
   let resetToken = await user.createPasswordToken();
   console.log("Reset token on forgot password: ", resetToken);
@@ -218,6 +221,8 @@ export const forgotPassword = async (req, res) => {
   const replyTo = process.env.EMAIL_USER;
   try {
     await sendEmail(message, subject, sentFrom, sendTo, replyTo);
+    await redisClient.disconnect();
+
     return res
       .status(StatusCodes.OK)
       .json({ msg: "Resent sent", success: true });

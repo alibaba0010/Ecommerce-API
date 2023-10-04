@@ -88,7 +88,9 @@ UserSchema.methods.createJWT = async function () {
 UserSchema.methods.createPasswordToken = async function () {
   await redisClient.connect();
   let resetToken = randomBytes(32).toString("hex") + this._id;
+  console.log("Reset token in db: ", resetToken);
   const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+  console.log("Hashed token in db: ", hashedToken);
 
   await redisClient.setEx(this.id, exp, hashedToken);
   const checkToken = await redisClient.get(this.id);

@@ -41,7 +41,7 @@ userRouter
   .get("/users/stats", authenticateUser, verifyAdmin, httpGetUsersStats)
   .get("/users/logout", authenticateUser, verifyUser, logOutUser)
   .patch("/forgotpassword", forgotPassword)
-  .patch("/resetpassword/:restToken", resetPassword)
+  .patch("/resetpassword/:resetToken", resetPassword)
   .post("/user/address", authenticateUser, verifyUser, httpAddAddress)
   .patch("/user/address", authenticateUser, verifyUser, httpUpdateAddress);
 

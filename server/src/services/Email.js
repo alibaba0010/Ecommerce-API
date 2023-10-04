@@ -9,7 +9,7 @@ export const sendEmail = async (
 ) => {
   const transporter = createTransport({
     host: process.env.EMAIL_HOST,
-    port: 587,//465
+    port: 587, //465
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -29,7 +29,8 @@ export const sendEmail = async (
     if (err) {
       console.log(err);
     } else {
-      console.log(info);
+      // console.log(info);
+      console.log("Email sent");
     }
   });
 };

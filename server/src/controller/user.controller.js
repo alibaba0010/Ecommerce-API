@@ -198,7 +198,8 @@ export const forgotPassword = async (req, res) => {
   if (!user) throw new notFoundError("Email doesn't exist");
 
   const checkToken = await redisClient.get(user.id);
-  console.log("check token in db: ", checkToken);
+  // if(checkToken) throw new BadRequestError("Email Already sent")
+
   // Create reset token
   let resetToken = await user.createPasswordToken();
   console.log("Reset token on forgot password: ", resetToken);

@@ -195,7 +195,6 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
-  // await redisClient.connect();
 
   // Create reset token
   let resetToken = await user.createPasswordToken();
@@ -216,9 +215,8 @@ export const forgotPassword = async (req, res) => {
   const sendTo = user.email;
   const sentFrom = process.env.EMAIL_USER;
   const replyTo = process.env.EMAIL_USER;
-  // await redisClient.disconnect();
   try {
-    const seen = await sendEmail(message, subject, sentFrom, sendTo, replyTo);
+    await sendEmail(message, subject, sentFrom, sendTo, replyTo);
     return res
       .status(StatusCodes.OK)
       .json({ msg: "Resent sent", success: true });

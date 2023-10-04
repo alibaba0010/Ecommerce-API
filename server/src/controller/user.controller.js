@@ -198,10 +198,11 @@ export const forgotPassword = async (req, res) => {
 
   // Create reset token
   let resetToken = await user.createPasswordToken();
+  console.log("Reset token on forgot password: ", resetToken);
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
   // Reset Email
   const message = `
-  <h2>Hello ${user.name}</h2>
+  <h2>Hello ${user.username}</h2>
   <p>Please use the url below to reset your password</p>  
   <p>This reset link is valid for only 20minutes.</p>
   
@@ -229,13 +230,14 @@ export const forgotPassword = async (req, res) => {
 // RESET PASSWORD FUNCTIONALITY
 export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;
+  console.log("Reset Token:  ", resetToken);
   const { password, confirmPassword } = req.body;
 
   if (password !== confirmPassword)
     throw new BadRequestError("Password doesn't match");
   // Hash token, then compare to Token in DB
   const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-
+  console.log("Hashed Token: ", hashedToken);
   // fIND tOKEN in DB
   // const userToken = await Token.findOne({
   //   token: hashedToken,

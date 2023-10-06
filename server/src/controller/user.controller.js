@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
+import { generate } from "otp-generator";
 import { getPagination } from "../services/query.js";
 import geocoder from "../services/geocoder.js";
 import User from "../model/user/user.mongo.js";
@@ -314,7 +315,11 @@ export async function httpUpdateAddress(req, res) {
     .json({ msg: "Address updated successfully", userAddress });
 }
 //GENERATE OTP TO BE SENT TO EMAIL
-export const generateOtp = async (req, res) => {};
+export const generateOtp = async (req, res) => {
+  const otp = generate(6, { upperCaseAlphabets: false, specialChars: false });
+  console.log("OTP: ", otp);
+  res.status(StatusCodes.OK).json({ message: "OTP generated successfully" });
+};
 
 /*******ADDING OTHER PROPERTIES FOR A USER */
 // export const updateUser = async (req, res) => {

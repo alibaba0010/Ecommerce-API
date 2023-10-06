@@ -14,6 +14,7 @@ import {
   httpGetUsersStats,
   httpAddAddress,
   httpUpdateAddress,
+  generateOtp,
 } from "../controller/user.controller.js";
 
 import {
@@ -30,6 +31,7 @@ userRouter
   .post("/users/register", httpAddNewUser)
   .post("/admin/register", httpAddNewAdmin)
   .post("/users/login", httpLogin)
+  .get("/user/generate-otp", generateOtp)
   //update user already  logged in with his token verification
   .patch("/users/user", authenticateUser, verifyUser, updateUser)
   .patch("/user/password", authenticateUser, verifyUser, updateUserPassword)

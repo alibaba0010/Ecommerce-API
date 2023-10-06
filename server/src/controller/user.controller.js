@@ -19,6 +19,7 @@ import {
 const { randomBytes, createHash } = await import("node:crypto");
 
 import dotenv from "dotenv";
+import UnAuthorizedError from "../errors/unauthorized.js";
 dotenv.config();
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
@@ -168,6 +169,7 @@ export const logOutUser = async (req, res) => {
   const { userId } = req.user;
   await findUser(userId);
 
+  req.session = null;
   return res.status(StatusCodes.OK).json({ msg: "Successfully logged out" });
 };
 
@@ -254,7 +256,7 @@ export const resetPassword = async (req, res) => {
   });
 };
 
-// UPDATE USER ADDRESS
+/****** UPDATE USER ADDRESS **/
 // ADD Address and Payment Information
 export const httpAddAddress = async (req, res) => {
   const { address, paymentInformation } = req.body;
@@ -265,6 +267,8 @@ export const httpAddAddress = async (req, res) => {
     throw new BadRequestError("Please provide address and payment Information");
 
   const loc = await geocoder.geocode(address);
+  if (user.location.length > 0)
+    throw new UnAuthorizedError("Address already exists");
   user.location = {
     type: "Point",
     coordinates: [loc[0].longitude, loc[0].latitude],
@@ -272,10 +276,11 @@ export const httpAddAddress = async (req, res) => {
   };
   // Do not save address
   user.address = undefined;
-  await User.create({ loc, paymentInformation });
+  user.paymentInformation = paymentInformation;
 
   await user.save();
-
+  const userAddress = user.location.map((address) => address.formattedAddress);
+  console.log("User Address: ", userAddress);
   return res
     .status(StatusCodes.CREATED)
     .json({ msg: "Address successfully added" });
@@ -289,8 +294,10 @@ export async function httpUpdateAddress(req, res) {
   const user = await User.findById(userId).select("-password");
   if (!user) throw new notFoundError("Login to Add Address");
 
-  if (!address)
-    throw new BadRequestError("Please provide address and payment Information");
+  if (!address) throw new BadRequestError("Please provide address");
+
+  if (user.location.length === 3)
+    throw new UnAuthorizedError("Address already exists");
   const loc = await geocoder.geocode(address);
 
   const newAddress = {
@@ -298,45 +305,21 @@ export async function httpUpdateAddress(req, res) {
     coordinates: [loc[0].longitude, loc[0].latitude],
     formattedAddress: loc[0].formattedAddress,
   };
-  user.addresses.push(newAddress);
-  console.log("addresses: ", user.addresses.location);
+  user.location.push(newAddress);
+  console.log("addresses: ", user.location);
 
   // Do not save address
   user.address = undefined;
-  // user.location = loc;
-
-  user.paymentInformation = paymentInformation;
-
-  const newAdd = user.addresses;
 
   const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-
+  console.log("Update Addresses: ....", updateOrder);
   await user.save();
-  return res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
+  const userAddress = user.location.map((address) => address.formattedAddress);
+  console.log("User Address: ", userAddress);
+  return res
+    .status(StatusCodes.OK)
+    .json({ msg: "Address updated successfully" });
 }
-
-// formattedAddress: loc[0].formattedAddress,
-// };
-// console.log("new Address: ", newAddress);
-// user.location.push(newAddress);
-// console.log("newLocation: ", user.location);
-
-// // Do not save address
-// user.address = undefined;
-// // const newAdd = user.addresses;
-// // const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-// // console.log("updatedAddress: ", updateOrder);
-// await user.save();
-// console.log("user: ", user);
-// res.status(StatusCodes.OK).json({ msg: "Address added successfully" });
-
-// throw new BadRequestError("Please provide address and payment Information");
-
-// // Do not save address
-// user.address = undefined;
-// // user.location = loc;
-// // console.log("LOC: ", loc);
-// user.paymentInformation = paymentInformation;
 
 /*******ADDING OTHER PROPERTIES FOR A USER */
 // export const updateUser = async (req, res) => {

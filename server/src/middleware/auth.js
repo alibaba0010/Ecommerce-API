@@ -26,6 +26,7 @@ export const authenticateUser = async (req, res, next) => {
 
     next();
   } catch (err) {
+    req.session = null;
     throw new UnauthenticatedError("Unable to authorize access, login again");
   }
 };

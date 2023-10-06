@@ -280,10 +280,9 @@ export const httpAddAddress = async (req, res) => {
 
   await user.save();
   const userAddress = user.location.map((address) => address.formattedAddress);
-  console.log("User Address: ", userAddress);
   return res
     .status(StatusCodes.CREATED)
-    .json({ msg: "Address successfully added" });
+    .json({ msg: "Address successfully added", userAddress });
   // }
 };
 
@@ -297,7 +296,7 @@ export async function httpUpdateAddress(req, res) {
   if (!address) throw new BadRequestError("Please provide address");
 
   if (user.location.length === 3)
-    throw new UnAuthorizedError("Address already exists");
+    throw new UnAuthorizedError("Unable to add address");
   const loc = await geocoder.geocode(address);
 
   const newAddress = {
@@ -306,19 +305,15 @@ export async function httpUpdateAddress(req, res) {
     formattedAddress: loc[0].formattedAddress,
   };
   user.location.push(newAddress);
-  console.log("addresses: ", user.location);
 
   // Do not save address
   user.address = undefined;
 
-  const updateOrder = await User.updateOne({ $push: { newAdd: newAddress } });
-  console.log("Update Addresses: ....", updateOrder);
   await user.save();
   const userAddress = user.location.map((address) => address.formattedAddress);
-  console.log("User Address: ", userAddress);
   return res
     .status(StatusCodes.OK)
-    .json({ msg: "Address updated successfully" });
+    .json({ msg: "Address updated successfully", userAddress });
 }
 
 /*******ADDING OTHER PROPERTIES FOR A USER */

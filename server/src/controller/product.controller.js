@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import notFoundError from "../errors/notFound.js";
 import Product from "../model/product/product.mongo.js";
 import { getPagination } from "../services/query.js";
-import User from "../model/user/user.mongo.js";
+// import User from "../model/user/user.mongo.js";
 import BadRequestError from "../errors/badRequest.js";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import { checkAdmin } from "../model/user/user.model.js";

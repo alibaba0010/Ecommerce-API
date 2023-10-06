@@ -197,12 +197,8 @@ export const forgotPassword = async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
 
-  const checkToken = await redisClient.get(user.id);
-  // if(checkToken) throw new BadRequestError("Email Already sent")
-
   // Create reset token
   let resetToken = await user.createPasswordToken();
-  console.log("Reset token on forgot password: ", resetToken);
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
   // Reset Email
   const message = `
@@ -236,25 +232,23 @@ export const forgotPassword = async (req, res) => {
 // RESET PASSWORD FUNCTIONALITY
 export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;
-  console.log("Reset Token:  ", resetToken);
   const { password, confirmPassword } = req.body;
+  await redisClient.connect();
 
   if (password !== confirmPassword)
     throw new BadRequestError("Password doesn't match");
   // Hash token, then compare to Token in DB
-  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
-  console.log("Hashed Token: ", hashedToken);
-  // fIND tOKEN in DB
-  // const userToken = await Token.findOne({
-  //   token: hashedToken,
-  //   expiresAt: { $gt: Date.now() },
-  // });
-  // if (!userToken) throw new notFoundError("Invalid or Expired Token");
+  const getUserId = await redisClient.get(resetToken);
+
+  if (!getUserId) throw new BadRequestError("Link not valid");
 
   // Find user
-  // const user = await Token.findOne({ _id: userToken.userId });
+  const user = await User.findById(getUserId);
+  if (!user) throw new notFoundError("User not Found");
+
   user.password = password;
   await user.save();
+  await redisClient.disconnect();
   res.status(StatusCodes.OK).json({
     msg: "Password Reset Successful, Please Login",
   });

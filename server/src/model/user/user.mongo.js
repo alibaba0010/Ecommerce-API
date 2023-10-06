@@ -86,13 +86,13 @@ UserSchema.methods.createJWT = async function () {
 // Create forgot password token
 UserSchema.methods.createPasswordToken = async function () {
   await redisClient.connect();
-  let resetToken = randomBytes(32).toString("hex") + this._id;
-  console.log("Reset token in db: ", resetToken);
-  const hashedToken = createHash("sha256").update(resetToken).digest("hex");
+  const salt = await bcrypt.genSalt(10);
+  console.log("Id: ", this.id);
+  const hashedToken = await bcrypt.hash(this.id, salt);
   console.log("Hashed token in db: ", hashedToken);
 
-  await redisClient.setEx(this.id, exp, hashedToken);
-  const checkToken = await redisClient.get(this.id);
+  await redisClient.setEx(hashedToken, exp, this.id);
+
   await redisClient.disconnect();
   return hashedToken;
 };

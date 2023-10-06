@@ -1,6 +1,5 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
 import { getPagination } from "../services/query.js";
 import geocoder from "../services/geocoder.js";
 import User from "../model/user/user.mongo.js";
@@ -16,7 +15,6 @@ import {
   requiredFields,
   checkValue,
 } from "../model/user/user.model.js";
-const { randomBytes, createHash } = await import("node:crypto");
 
 import dotenv from "dotenv";
 import UnAuthorizedError from "../errors/unauthorized.js";
@@ -315,6 +313,8 @@ export async function httpUpdateAddress(req, res) {
     .status(StatusCodes.OK)
     .json({ msg: "Address updated successfully", userAddress });
 }
+//GENERATE OTP TO BE SENT TO EMAIL
+export const generateOtp = async (req, res) => {};
 
 /*******ADDING OTHER PROPERTIES FOR A USER */
 // export const updateUser = async (req, res) => {

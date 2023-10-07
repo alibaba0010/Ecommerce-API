@@ -50,6 +50,7 @@ export async function httpAddNewProduct(req, res) {
 // UPDATE PRODUCT
 export async function httpUpdateProduct(req, res) {
   const { userId } = req.user;
+  console.log("UserId: ", userId);
   const { id: productId } = req.params;
   const { title, desc, categories, color, size, price, quantity } = req.body;
   const { file } = req;

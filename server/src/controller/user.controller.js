@@ -1,6 +1,5 @@
 import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
-import { generate } from "otp-generator";
 import { getPagination } from "../services/query.js";
 import geocoder from "../services/geocoder.js";
 import User from "../model/user/user.mongo.js";

@@ -315,8 +315,7 @@ export async function httpUpdateAddress(req, res) {
 }
 //GENERATE OTP TO BE SENT TO EMAIL
 export const generateOtp = async (req, res) => {
-  const otp = generate(6, { upperCaseAlphabets: false, specialChars: false });
-  console.log("OTP: ", otp);
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
   res.status(StatusCodes.OK).json({ message: "OTP generated successfully" });
 };
 

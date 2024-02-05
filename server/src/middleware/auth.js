@@ -4,7 +4,6 @@ import UnAuthorizedError from "../errors/unauthorized.js";
 import { createClient } from "redis";
 
 import User from "../model/user/user.mongo.js";
-import UnAuthenticatedError from "../errors/unaunthenticated.js";
 
 export const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;

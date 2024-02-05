@@ -27,5 +27,5 @@ npm run dev (nodemon)
 ```
 
 
-
+yarn add bcrypt
 NODE_OPTIONS=--experimental-vm-modules npm run test

@@ -18,6 +18,7 @@ import {
 
 import dotenv from "dotenv";
 import UnAuthorizedError from "../errors/unauthorized.js";
+import NotFoundError from "../errors/notFound.js";
 dotenv.config();
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
@@ -289,7 +290,7 @@ export async function httpUpdateAddress(req, res) {
   const { address } = req.body;
   const { userId } = req.user;
   const user = await User.findById(userId).select("-password");
-  if (!user) throw new notFoundError("Login to Add Address");
+  if (!user) throw new NotFoundError("Login to Add Address");
 
   if (!address) throw new BadRequestError("Please provide address");
 

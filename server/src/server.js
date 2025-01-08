@@ -5,6 +5,7 @@ import app from "./app.js";
 dotenv.config();
 const PORT = process.env.PORT || 2000;
 const uri = process.env.MONGO_URL;
+console.log("uri :>> ", uri);
 const server = createServer(app);
 
 (async () => {

@@ -71,6 +71,7 @@ UserSchema.pre("save", async function (next) {
 });
 
 UserSchema.methods.createJWT = async function () {
+  console.log("JWT_SEC :>> ", process.env.JWT_SEC);
   const signInToken = jwt.sign(
     { userId: this._id, isAdmin: this.isAdmin },
     process.env.JWT_SEC,

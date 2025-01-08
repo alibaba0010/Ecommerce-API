@@ -3,7 +3,7 @@ services:
     container_name: backend
     # image: node:18-alpine3.16
     build: ./
-    command: npm run watch
+    command: npm run dev
     working_dir: /usr/src/test
     environment:
       REDIS_URI: redis://redis:6379
@@ -13,6 +13,7 @@ services:
       - "2000:2000"
     volumes:
       - ./:/usr/src/test
+      - /usr/src/test/node_modules
 
   # Redis
   redis:

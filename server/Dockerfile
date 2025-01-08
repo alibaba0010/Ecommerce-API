@@ -11,5 +11,5 @@ COPY ./ ./
 RUN npm install
 
 CMD ["npm", "run", "dev"]
-
+# CMD [ "/bin/sh" ]
 EXPOSE 2000

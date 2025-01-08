@@ -8,6 +8,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const exp = process.env.JWT_LIFETIME;
+console.log("JWT_SEC :>> ", process.env.JWT_SEC);
+console.log("exp :>> ", exp);
 // const redisClient = createClient({ url: process.env.REDIS_URI });
 const redisClient = createClient();
 
@@ -71,7 +73,6 @@ UserSchema.pre("save", async function (next) {
 });
 
 UserSchema.methods.createJWT = async function () {
-  console.log("JWT_SEC :>> ", process.env.JWT_SEC);
   const signInToken = jwt.sign(
     { userId: this._id, isAdmin: this.isAdmin },
     process.env.JWT_SEC,

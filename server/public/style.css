@@ -1,45 +1,63 @@
-.get button {
-  display: block;
-}
 body {
-  margin: 10px;
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
 }
-button {
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.api-button {
   display: inline-block;
   border: none;
   border-radius: 25px;
   color: white;
-  padding: 20px;
-  background-color: blue;
-  font-size: 20px;
-  margin-bottom: 25px;
-  align-self: left;
-  width: 15%;
+  padding: 10px 20px;
+  background-color: #007bff;
+  font-size: 16px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
 }
-.others {
-  margin-top: 45px;
-  font-size: large;
+
+.api-button:hover {
+  background-color: #0056b3;
 }
-.links {
-  font-size: 30px;
-  color: rgb(6, 9, 12);
+
+.table {
+  font-size: 14px;
 }
+
+.list-group-item {
+  font-size: 16px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+@media only screen and (max-width: 768px) {
+  .api-button {
+    width: 100%;
+  }
+}
+
 @media only screen and (max-width: 600px) {
   body {
-    display: flex;
-    background-color: lightblue;
-    justify-content: center;
-  }
-  button {
-    width: 30%;
+    background-color: #e9ecef;
   }
 }
-@media only screen and (max-width: 768px) {
-  body {
-    display: flex;
-    justify-content: center;
-  }
-  button {
-    width: 25%;
-  }
-}
+

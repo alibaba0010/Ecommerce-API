@@ -50,6 +50,9 @@ global.signin = async (isAdmin = false) => {
     value: email,
     password,
   });
-  // Return cookie for authentication
-  return response.headers["set-cookie"];
+  // Extract JWT from session if available
+  // If your login response includes the JWT in the body, return it
+  // Otherwise, parse from cookie/session as needed
+  // Here, assuming JWT is in response.body.token or response.body.jwt
+  return response.body.token || response.body.jwt;
 };

@@ -53,36 +53,20 @@ describe("User Login Functionality", () => {
   });
 
   it("clears the token after logging out", async () => {
-    await global.signin();
-    const loginRes = await request(app)
-      .post("/v1/users/login")
-      .send({
-        value: "testuser@example.com",
-        password: "password123",
-      })
-      .expect(200);
-    const cookie = loginRes.headers["set-cookie"];
+    const token = await global.signin();
     const response = await request(app)
       .get("/v1/users/logout")
-      .set("Cookie", cookie)
+      .set("Authorization", `Bearer ${token}`)
       .send({})
       .expect(200);
-    expect(response.body.msg).toMatch(/logged out/i);
+    expect(response.body.msg).toMatch(/Successfully logged out/i);
   });
 
   it("responds with details about the current user", async () => {
-    await global.signin();
-    const loginRes = await request(app)
-      .post("/v1/users/login")
-      .send({
-        value: "testuser@example.com",
-        password: "password123",
-      })
-      .expect(200);
-    const cookie = loginRes.headers["set-cookie"];
+    const token = await global.signin();
     const response = await request(app)
       .get("/v1/user")
-      .set("Cookie", cookie)
+      .set("Authorization", `Bearer ${token}`)
       .send()
       .expect(200);
     expect(response.body.email).toBe("testuser@example.com");

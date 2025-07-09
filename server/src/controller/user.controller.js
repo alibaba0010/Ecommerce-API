@@ -66,7 +66,9 @@ export async function httpLogin(req, res) {
   req.session = {
     jwt: token,
   };
-  res.status(StatusCodes.OK).json({ id: user.id, username: user.username });
+  res
+    .status(StatusCodes.OK)
+    .json({ id: user.id, username: user.username, token });
 }
 
 // UPDATE USER

@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "watch": "node src/server.js",
-    "test": "jest --watchAll --no-cache --detectOpenHandles",
-    "test:ci": "jest"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --watchAll --no-cache --detectOpenHandles",
+    "test:ci": "NODE_OPTIONS='--experimental-vm-modules' jest"
   },
   "keywords": [],
   "author": "Ali Baba",
@@ -24,7 +24,13 @@
     "transform": {},
     "setupFilesAfterEnv": [
       "./src/test/index.js"
-    ]
+    ],
+    "transformIgnorePatterns": [],
+    "globals": {
+      "jest": {
+        "useESM": true
+      }
+    }
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -52,11 +58,11 @@
   },
   "devDependencies": {
     "jest": "^29.6.2",
-    "mongodb-memory-server": "^8.14.0",
+    "mongodb-memory-server": "^10.1.4",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
   },
   "engines": {
-    "node": ">=16 <=18"
+    "node": ">=16 <=22"
   }
 }

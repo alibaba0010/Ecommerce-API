@@ -32,19 +32,24 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-// global.signin = async () => {
-//   const email = "test@test.com";
-//   const password = "password";
-
-//   const response = await request(app)
-//     .post("/v1/users/login")
-//     .send({
-//       email,
-//       password,
-//     })
-//     .expect(201);
-
-//   const cookie = response.get("Set-Cookie");
-
-//   return cookie;
-// };
+global.signin = async (isAdmin = false) => {
+  const email = isAdmin ? "admin@example.com" : "testuser@example.com";
+  const password = "password123";
+  const username = isAdmin ? "adminuser" : "testuser";
+  // Register user (or admin)
+  await request(app)
+    .post(isAdmin ? "/v1/admin/register" : "/v1/users/register")
+    .send({
+      username,
+      email,
+      password,
+      confirmPassword: password,
+    });
+  // Login user
+  const response = await request(app).post("/v1/users/login").send({
+    value: email,
+    password,
+  });
+  // Return cookie for authentication
+  return response.headers["set-cookie"];
+};

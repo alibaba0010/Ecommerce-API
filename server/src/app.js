@@ -10,6 +10,17 @@ import cartRouter from "./routes/cart.router.js";
 import dotenv from "dotenv";
 import { errorHandler } from "./errors/error.js";
 import { routeError } from "./errors/route.error.js";
+import compression from "compression";
+import NodeCache from "node-cache";
+import pino from "pino";
+import morgan from "morgan";
+import expressStatusMonitor from "express-status-monitor";
+import helmet from "helmet";
+import hpp from "hpp";
+import xss from "xss-clean";
+import mongoSanitize from "express-mongo-sanitize";
+
+// Load environment variables
 dotenv.config();
 
 import path from "path";
@@ -18,37 +29,66 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Security: Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  max: 100, // Limit each IP to 100 requests per window that means 100 requests every 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
+// Logger and cache (for advanced use)
+const logger =
+  process.env.NODE_ENV === "production"
+    ? pino({ level: "info" })
+    : pino({ level: "debug" });
+const cache = new NodeCache();
+
 const app = express();
+
+// Monitoring and security middlewares
 app
-  .use(cors())
-  .use(json())
+  .use(expressStatusMonitor())
+  .use(
+    helmet({
+      contentSecurityPolicy: false, // Set to true and configure CSP in production
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    })
+  )
+  .use(
+    cors({
+      origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"],
+      credentials: true,
+      optionsSuccessStatus: 200,
+    })
+  )
+  .use(hpp())
+  .use(xss())
+  .use(mongoSanitize())
+  .use(compression())
+  .use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"))
+  .use(json({ limit: "10mb" }))
   .use(limiter)
   .use(
     cookieSession({
       signed: false,
-      secure: false, //process.env.NODE_ENV !== "test"
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production", // Only send cookie over HTTPS in production
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      httpOnly: true,
     })
-  ) // 24 hours
-  .use("/products", express.static((__dirname, "./uploads")))
+  )
+  .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)
   .use("/v1/products", productRouter)
   .use("/v1", cartRouter)
   .use("/", express.static("public"))
-
   .use(routeError)
   .use(errorHandler);
 
-export default app;
+// Example usage of logger and cache (for your routes/services)
+// logger.info("App started");
+// cache.set("key", "value", 10000);
 
-//   cors({
-//     origin: ["http://localhost:3000", "https://pinvent-app.vercel.app"],
-//     credentials: true,
-//   })
+export default app;

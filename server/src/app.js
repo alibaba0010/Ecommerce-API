@@ -46,6 +46,27 @@ const cache = new NodeCache();
 
 const app = express();
 
+// Custom logging middleware
+app.use((req, res, next) => {
+  const startHrTime = process.hrtime();
+
+  res.on("finish", () => {
+    const elapsedHrTime = process.hrtime(startHrTime);
+    const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
+
+    logger.info({
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+      userAgent: req.headers["user-agent"],
+      responseTime: `${elapsedTimeInMs.toFixed(3)} ms`,
+    });
+  });
+
+  next();
+});
+
 // Monitoring and security middlewares
 app
   .use(expressStatusMonitor())

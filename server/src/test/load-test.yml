@@ -6,7 +6,7 @@ config:
     - duration: 60
       arrivalRate: 50 # 50 new users per second for 1 minute (stress)
   payload:
-    path: "users.csv"
+    path: "./users.csv"
     fields:
       - username
       - email

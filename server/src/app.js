@@ -89,7 +89,7 @@ app
   .use(compression())
   .use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"))
   .use(json({ limit: "10mb" }))
-  .use(limiter)
+  // .use(limiter)
   .use(
     cookieSession({
       signed: false,

@@ -68,7 +68,7 @@ export async function httpLogin(req, res) {
   };
   res
     .status(StatusCodes.OK)
-    .json({ id: user.id, username: user.username, token });
+    .json({ id: user.id, username: user.username, tokenz });
 }
 
 // UPDATE USER

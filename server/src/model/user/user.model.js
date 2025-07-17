@@ -9,7 +9,7 @@ export const comparePassword = (password, confirmPassword) => {
 };
 export const requiredFields = (username, email, password, confirmPassword) => {
   if (!username || !email || !password || !confirmPassword)
-    throw new BadRequestError("Please fill all required field");
+    throw new BadRequestError("All fields are required");
 };
 
 export const checkIfExists = async (email, username) => {
@@ -41,5 +41,6 @@ export const checkValue = async (value) => {
     result = await User.findOne({ username: value });
   }
   if (!result) throw new BadRequestError("Unable to find user");
+
   return result;
 };

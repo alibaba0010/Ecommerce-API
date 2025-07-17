@@ -1,0 +1,85 @@
+config:
+  target: "http://localhost:2000"
+  # processor: "./artillery-hooks.js"
+  phases:
+    - duration: 5
+      arrivalRate: 10
+    - duration: 10
+      arrivalRate: 15
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  payload:
+    path: "./users.csv"
+    fields:
+      - username
+      - email
+      - password
+      - confirmPassword
+  plugins:
+    metrics-by-endpoint:
+      enabled: true
+      groupBy: ["url", "method", "statusCode"]
+scenarios:
+  - name: "User Registration and Login"
+    flow:
+      - post:
+          url: "/v1/users/register"
+          json:
+            username: "{{ username }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            confirmPassword: "{{ confirmPassword }}"
+          capture:
+            - json: "id"
+              as: "userId"
+      - post:
+          url: "/v1/users/login"
+          json:
+            value: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "token"
+              as: "token"
+      - get:
+          url: "/v1/user"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - patch:
+          url: "/v1/users/user"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            username: "{{ username }}_updated"
+      - get:
+          url: "/v1/users/logout"
+          headers:
+            Authorization: "Bearer {{ token }}"
+  - name: "Admin Get All Users"
+    flow:
+      - post:
+          url: "/v1/admin/register"
+          json:
+            username: "admin{{ username }}"
+            email: "admin{{ email }}"
+            password: "{{ password }}"
+            confirmPassword: "{{ confirmPassword }}"
+          capture:
+            - json: "id"
+              as: "userId"
+      - post:
+          url: "/v1/users/login"
+          json:
+            value: "admin{{ username }}"
+            password: "{{ password }}"
+          capture:
+            - json: "token"
+              as: "adminToken"
+      - get:
+          url: "/v1/users"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+      - get:
+          url: "/v1/users/stats"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"

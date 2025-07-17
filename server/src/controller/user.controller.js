@@ -26,7 +26,6 @@ const redisClient = createClient();
 // CREATE NEW USER
 export async function httpAddNewUser(req, res) {
   const { username, email, password, confirmPassword } = req.body;
-
   comparePassword(password, confirmPassword);
 
   requiredFields(username, email, password, confirmPassword);
@@ -45,7 +44,6 @@ export async function httpAddNewAdmin(req, res) {
   const { username, email, password, confirmPassword, isAdmin } = admin;
 
   comparePassword(password, confirmPassword);
-
   requiredFields(username, email, password, confirmPassword);
   await checkIfExists(email, username);
   const user = await User.create({ username, email, password, isAdmin });
@@ -68,14 +66,13 @@ export async function httpLogin(req, res) {
   };
   res
     .status(StatusCodes.OK)
-    .json({ id: user.id, username: user.username, tokenz });
+    .json({ id: user.id, username: user.username, token });
 }
 
 // UPDATE USER
 export async function updateUser(req, res) {
   const { username } = req.body;
   const { userId } = req.user;
-
   if (!username) throw new BadRequestError("Username field cannot be empty");
 
   const user = await User.findById(userId);

@@ -9,7 +9,7 @@
     "watch": "node src/server.js",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest --watchAll --no-cache --detectOpenHandles",
     "test:ci": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "load:test": "artillery run src/test/load-test.yml --record --key a9_hkwg8g4agif011tmon98ntnnglxc95xy"
+    "load:test": "artillery run src/load-test/load-test.yml --record --key a9_hkwg8g4agif011tmon98ntnnglxc95xy"
   },
   "keywords": [],
   "author": "Ali Baba",

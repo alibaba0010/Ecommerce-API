@@ -6,6 +6,21 @@ import Order from "../model/order.mongo.js";
 import User from "../model/user/user.mongo.js";
 import { getPagination } from "../services/query.js";
 import { checkAdmin } from "../model/user/user.model.js";
+import Stripe from "stripe";
+import paypal from "@paypal/checkout-server-sdk";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// PayPal configuration
+const paypalClient = new paypal.core.PayPalHttpClient(
+  new paypal.core.SandboxEnvironment(
+    process.env.PAYPAL_CLIENT_ID,
+    process.env.PAYPAL_CLIENT_SECRET
+  )
+);
 
 // CREATE ORDER
 export async function httpCreateOrder(req, res) {
@@ -120,4 +135,151 @@ export async function httpGetIncome(req, res) {
     { $group: { _id: "$month", total: { $sum: "$sales" } } },
   ]);
   return await res.status(StatusCodes.OK).json(data);
+}
+
+// CREATE STRIPE PAYMENT SESSION
+export async function httpCreateStripeSession(req, res) {
+  const { orderId } = req.params;
+  const { userId } = req.user;
+
+  const order = await Order.findById(orderId);
+  if (!order) throw new notFoundError("Order not found");
+
+  if (order.userId.toString() !== userId) {
+    throw new BadRequestError("Not authorized to access this order");
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Order #" + order._id,
+          },
+          unit_amount: Math.round(order.amount * 100), // Convert to cents
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `${process.env.CLIENT_URL}/order/success?orderId=${order._id}`,
+    cancel_url: `${process.env.CLIENT_URL}/order/cancel?orderId=${order._id}`,
+  });
+
+  // Update order with payment intent
+  await Order.findByIdAndUpdate(orderId, {
+    paymentIntentId: session.payment_intent,
+    paymentStatus: "pending",
+    paymentMethod: "stripe",
+  });
+
+  res.status(StatusCodes.OK).json({ url: session.url });
+}
+
+// CREATE PAYPAL PAYMENT
+export async function httpCreatePayPalPayment(req, res) {
+  const { orderId } = req.params;
+  const { userId } = req.user;
+
+  const order = await Order.findById(orderId);
+  if (!order) throw new notFoundError("Order not found");
+
+  if (order.userId.toString() !== userId) {
+    throw new BadRequestError("Not authorized to access this order");
+  }
+
+  const request = new paypal.orders.OrdersCreateRequest();
+  request.prefer("return=representation");
+  request.requestBody({
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD",
+          value: order.amount.toString(),
+        },
+        reference_id: order._id.toString(),
+      },
+    ],
+  });
+
+  try {
+    const paypalOrder = await paypalClient.execute(request);
+
+    // Update order with PayPal order ID
+    await Order.findByIdAndUpdate(orderId, {
+      paypalOrderId: paypalOrder.result.id,
+      paymentStatus: "pending",
+      paymentMethod: "paypal",
+    });
+
+    res.status(StatusCodes.OK).json({
+      orderID: paypalOrder.result.id,
+    });
+  } catch (err) {
+    throw new BadRequestError("Error creating PayPal order");
+  }
+}
+
+// VERIFY PAYPAL PAYMENT
+export async function httpVerifyPayPalPayment(req, res) {
+  const { orderId } = req.params;
+  const { paypalOrderId } = req.body;
+
+  const order = await Order.findById(orderId);
+  if (!order) throw new notFoundError("Order not found");
+
+  const request = new paypal.orders.OrdersCaptureRequest(paypalOrderId);
+  request.requestBody({});
+
+  try {
+    const capture = await paypalClient.execute(request);
+
+    if (capture.result.status === "COMPLETED") {
+      await Order.findByIdAndUpdate(orderId, {
+        paymentStatus: "completed",
+        paidAt: new Date(),
+      });
+
+      res.status(StatusCodes.OK).json({ status: "success" });
+    } else {
+      throw new BadRequestError("Payment not completed");
+    }
+  } catch (err) {
+    throw new BadRequestError("Error verifying PayPal payment");
+  }
+}
+
+// STRIPE WEBHOOK
+export async function httpStripeWebhook(req, res) {
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    res.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
+
+    const order = await Order.findOne({ paymentIntentId: paymentIntent.id });
+    if (order) {
+      await Order.findByIdAndUpdate(order._id, {
+        paymentStatus: "completed",
+        paidAt: new Date(),
+      });
+    }
+  }
+
+  res.json({ received: true });
 }

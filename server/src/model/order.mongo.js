@@ -28,6 +28,19 @@ const OrderSchema = new Schema(
       enum: ["pending", "failed", "paid", "delivered", "canceled"],
       default: "pending",
     },
+    paymentMethod: {
+      type: String,
+      enum: ["stripe", "paypal"],
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "pending",
+    },
+    paymentIntentId: String,
+    paypalOrderId: String,
+    paidAt: Date,
     // clientSecret: {
     //   type: String,
     // },

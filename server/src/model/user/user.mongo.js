@@ -19,6 +19,7 @@ const UserSchema = new Schema(
       unique: [true, "Username already in use"],
       minlength: 3,
       maxlength: 50,
+      index: true,
     },
     email: {
       type: String,
@@ -29,6 +30,7 @@ const UserSchema = new Schema(
         "Please provide a valid email",
       ],
       unique: [true, "Email already in use"],
+      index: true,
     },
     password: {
       type: String,

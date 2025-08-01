@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 
 import {
   authenticateUser,
@@ -15,7 +15,10 @@ import {
   httpGetOrder,
   httpGetAllOrders,
   httpGetIncome,
-
+  httpCreateStripeSession,
+  httpCreatePayPalPayment,
+  httpVerifyPayPalPayment,
+  httpStripeWebhook,
 } from "../controller/order.controller.js";
 
 orderRouter
@@ -28,4 +31,34 @@ orderRouter
   .delete(authenticateUser, verifyAdmin, httpDeleteOrder)
   .get(authenticateUser, verifyUser, httpGetOrder);
 orderRouter.get("/income", authenticateUser, verifyAdmin, httpGetIncome);
+
+// Payment routes
+orderRouter.post(
+  "/order/:orderId/stripe-session",
+  authenticateUser,
+  verifyUser,
+  httpCreateStripeSession
+);
+
+orderRouter.post(
+  "/order/:orderId/paypal-payment",
+  authenticateUser,
+  verifyUser,
+  httpCreatePayPalPayment
+);
+
+orderRouter.post(
+  "/order/:orderId/paypal-verify",
+  authenticateUser,
+  verifyUser,
+  httpVerifyPayPalPayment
+);
+
+// Stripe webhook - no authentication needed as it's called by Stripe
+orderRouter.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  httpStripeWebhook
+);
+
 export default orderRouter;

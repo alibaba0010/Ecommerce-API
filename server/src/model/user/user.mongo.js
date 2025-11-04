@@ -2,14 +2,13 @@ import pkg, { Types } from "mongoose";
 const { Schema, model } = pkg;
 import dotenv from "dotenv";
 dotenv.config();
-import { createClient } from "redis";
 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { redisClient } from "../../services/redis.js";
 
 const exp = process.env.JWT_LIFETIME;
 // const redisClient = createClient({ url: process.env.REDIS_URI });
-const redisClient = createClient();
 
 const UserSchema = new Schema(
   {
@@ -85,7 +84,6 @@ UserSchema.methods.createJWT = async function () {
 
 // Create forgot password token
 UserSchema.methods.createPasswordToken = async function () {
-  await redisClient.connect();
   const salt = await bcrypt.genSalt(10);
   console.log("Id: ", this.id);
   const hashedToken = await bcrypt.hash(this.id, salt);
@@ -93,7 +91,6 @@ UserSchema.methods.createPasswordToken = async function () {
 
   await redisClient.setEx(hashedToken, exp, this.id);
 
-  await redisClient.disconnect();
   return hashedToken;
 };
 

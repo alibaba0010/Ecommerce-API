@@ -99,6 +99,9 @@ app
       httpOnly: true,
     })
   )
+  .use("/v1/health", (req, res) =>
+    res.status(200).json({ status: `${req.path} is live` })
+  )
   .use("/products", express.static(path.join(__dirname, "./uploads")))
   .use("/v1", userRouter)
   .use("/v1", orderRouter)

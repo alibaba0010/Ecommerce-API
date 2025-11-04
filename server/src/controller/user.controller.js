@@ -1,4 +1,3 @@
-import { createClient } from "redis";
 import { StatusCodes } from "http-status-codes";
 import { getPagination } from "../services/query.js";
 import geocoder from "../services/geocoder.js";
@@ -19,9 +18,9 @@ import {
 import dotenv from "dotenv";
 import UnAuthorizedError from "../errors/unauthorized.js";
 import NotFoundError from "../errors/notFound.js";
+import { redisClient } from "../services/redis.js";
 dotenv.config();
 // const redisClient = createClient({ url: process.env.REDIS_URI });
-const redisClient = createClient();
 
 // CREATE NEW USER
 export async function httpAddNewUser(req, res) {
@@ -192,11 +191,9 @@ export const updateUserPassword = async (req, res) => {
 
 // FORGOT PASSWORD FUNCTIONALITY
 export const forgotPassword = async (req, res) => {
-  await redisClient.connect();
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) throw new notFoundError("Email doesn't exist");
-
   // Create reset token
   let resetToken = await user.createPasswordToken();
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
@@ -218,7 +215,7 @@ export const forgotPassword = async (req, res) => {
   const replyTo = process.env.EMAIL_USER;
   try {
     await sendEmail(message, subject, sentFrom, sendTo, replyTo);
-    await redisClient.disconnect();
+    // await redisClient.disconnect();
 
     return res
       .status(StatusCodes.OK)
@@ -233,7 +230,6 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   const { resetToken } = req.params;
   const { password, confirmPassword } = req.body;
-  await redisClient.connect();
 
   if (password !== confirmPassword)
     throw new BadRequestError("Password doesn't match");
@@ -248,7 +244,6 @@ export const resetPassword = async (req, res) => {
 
   user.password = password;
   await user.save();
-  await redisClient.disconnect();
   res.status(StatusCodes.OK).json({
     msg: "Password Reset Successful, Please Login",
   });

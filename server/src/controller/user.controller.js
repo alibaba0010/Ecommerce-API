@@ -201,6 +201,9 @@ export const forgotPassword = async (req, res) => {
   const message = `
   <div style="font-family: Arial, Helvetica, sans-serif; color: #333;">
     <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:8px;background:#fff;">
+      <div style="text-align:center;padding-bottom:12px;">
+        <h1 style="margin:0;color:#0b75c9;">Ali Baba Team</h1>
+      </div>
       <p style="font-size:16px;">Hi ${user.username},</p>
       <p style="font-size:15px;">We received a request to reset your password. Click the button below to reset it. This link will expire in 20 minutes.</p>
       <div style="text-align:center;margin:18px 0;">
@@ -326,7 +329,7 @@ export const generateOtp = async (req, res) => {
     <div style="font-family: Arial, sans-serif; color: #333;">
       <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:8px;">
         <div style="text-align:center;padding-bottom:10px;">
-          <h1 style="margin:0;color:#0b75c9;">AliBaba</h1>
+          <h1 style="margin:0;color:#0b75c9;">Ali Baba Team</h1>
         </div>
         <p style="font-size:16px;">Hello,</p>
         <p style="font-size:15px;">You requested a One-Time Password (OTP). Use the code below to continue. This code will expire in 20 minutes.</p>

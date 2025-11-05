@@ -2,7 +2,7 @@ import { createClient } from "redis";
 import dotenv from "dotenv";
 dotenv.config();
 
-const redisUrl = process.env.REDIS_URI || "redis://redis:6379";
+const redisUrl = process.env.REDIS_URI;
 console.log("Redis URl: ", redisUrl);
 export const redisClient = createClient({ url: redisUrl });
 export async function startRedis() {

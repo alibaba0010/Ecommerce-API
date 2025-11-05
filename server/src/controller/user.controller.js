@@ -199,15 +199,24 @@ export const forgotPassword = async (req, res) => {
   const resetUrl = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
   // Reset Email
   const message = `
-  <h2>Hello ${user.username}</h2>
-  <p>Please use the url below to reset your password</p>  
-  <p>This reset link is valid for only 20minutes.</p>
-  
- <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
-
- <p>Regards...</p>
- <p>AliBaba Team</p>
-`;
+  <div style="font-family: Arial, Helvetica, sans-serif; color: #333;">
+    <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:8px;background:#fff;">
+      <div style="text-align:center;padding-bottom:12px;">
+        <h1 style="margin:0;color:#0b75c9;">AliBaba</h1>
+      </div>
+      <p style="font-size:16px;">Hi ${user.username},</p>
+      <p style="font-size:15px;">We received a request to reset your password. Click the button below to reset it. This link will expire in 20 minutes.</p>
+      <div style="text-align:center;margin:18px 0;">
+        <a href="${resetUrl}" style="display:inline-block;padding:12px 22px;background:#0b75c9;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Reset Password</a>
+      </div>
+      <p style="font-size:13px;color:#666;">Or copy and paste the link below into your browser:</p>
+      <p style="font-size:13px;color:#0b75c9;word-break:break-all;">${resetUrl}</p>
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:18px 0;" />
+      <p style="font-size:13px;color:#999;margin:0;">If you didn't request a password reset, please ignore this email.</p>
+      <p style="font-size:13px;color:#999;margin:8px 0 0 0;">Regards,<br/>AliBaba Team</p>
+    </div>
+  </div>
+  `;
 
   const subject = "Password Reset Request";
   const sendTo = user.email;
@@ -310,8 +319,60 @@ export async function httpUpdateAddress(req, res) {
 }
 //GENERATE OTP TO BE SENT TO EMAIL
 export const generateOtp = async (req, res) => {
+  // Generate a 6-digit OTP
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-  res.status(StatusCodes.OK).json({ message: "OTP generated successfully" });
+
+  // If an email is provided, send the OTP to that email and store it in Redis with a 20-minute TTL
+  const { email } = req.body || req.query || {};
+  if (email) {
+    const message = `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:8px;">
+        <div style="text-align:center;padding-bottom:10px;">
+          <h1 style="margin:0;color:#0b75c9;">AliBaba</h1>
+        </div>
+        <p style="font-size:16px;">Hello,</p>
+        <p style="font-size:15px;">You requested a One-Time Password (OTP). Use the code below to continue. This code will expire in 20 minutes.</p>
+        <div style="text-align:center;margin:20px 0;">
+          <span style="display:inline-block;padding:14px 22px;background:#0b75c9;color:#fff;font-weight:700;font-size:20px;border-radius:6px;letter-spacing:2px;">${resetCode}</span>
+        </div>
+        <p style="font-size:13px;color:#666;">If you didn't request this, you can safely ignore this email.</p>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:18px 0;" />
+        <p style="font-size:13px;color:#999;margin:0;">Regards,<br/>AliBaba Team</p>
+      </div>
+    </div>
+    `;
+
+    try {
+      // store OTP with TTL of 20 minutes (1200 seconds)
+      await redisClient.set(`otp:${email}`, resetCode, { EX: 1200 });
+      const subject = "Your AliBaba OTP";
+      const sentFrom = process.env.EMAIL_USER;
+      const replyTo = process.env.EMAIL_USER;
+      await sendEmail(message, subject, sentFrom, email, replyTo);
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: `OTP sent to ${email}` });
+    } catch (err) {
+      console.error(err);
+      throw new Error("Unable to send OTP email, please try again");
+    }
+  }
+
+  // If no email provided, for development return the OTP in the response (do not do this in production)
+  if (process.env.NODE_ENV === "development") {
+    return res
+      .status(StatusCodes.OK)
+      .json({
+        message: "OTP generated successfully (development)",
+        otp: resetCode,
+      });
+  }
+
+  // Production default: respond with a generic success message
+  return res
+    .status(StatusCodes.OK)
+    .json({ message: "OTP generated successfully" });
 };
 
 /*******ADDING OTHER PROPERTIES FOR A USER */
